@@ -13,10 +13,6 @@ SQLALCHEMY_DATABASE_URL = "postgresql://{0}:{1}@{2}:{3}/{4}".format(
     settings.POSTGRES_DB,
 )
 
-print("!!!!")
-print(SQLALCHEMY_DATABASE_URL)
-print("!!!!")
-
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 Session = sessionmaker(engine)
 Base = declarative_base()

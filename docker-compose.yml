@@ -22,7 +22,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: fastapi
-    # image: mikhailkhaykin/fast-api:latest
     image: fast-api:latest
 #    restart: always
     environment:
