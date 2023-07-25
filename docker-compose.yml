@@ -1,0 +1,44 @@
+# docker-compose.yml
+
+version: "3.9"
+
+services:
+  db:
+    container_name: postgres
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+      POSTGRES_DB: "fastapiylab"
+      POSTGRES_USER: "fastapiylab"
+      POSTGRES_PASSWORD: "password123"
+    ports:
+      - "5432:5432"
+#    volumes:
+#      - ./data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi
+    image: mikhailkhaykin/fast-api:latest
+#    restart: always
+    environment:
+        POSTGRES_HOST: "db"
+        DATABASE_PORT: 5432
+        POSTGRES_DB: "fastapiylab"
+        POSTGRES_USER: "fastapiylab"
+        POSTGRES_PASSWORD: "password123"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+
+
+networks:
+  default:
+      name: lan_fastapi
