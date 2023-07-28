@@ -3,7 +3,7 @@ from sqlalchemy.engine import URL
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from .config import settings
+from app.src.config import settings
 
 
 SQLALCHEMY_DATABASE_URL = URL.create(
@@ -30,3 +30,7 @@ def get_db():
 
 def create_tables():
     Base.metadata.create_all(bind=engine)
+
+
+def drop_tables():
+    Base.metadata.drop_all(bind=engine)
