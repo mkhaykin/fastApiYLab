@@ -1,24 +1,20 @@
-FROM tiangolo/uvicorn-gunicorn:python3.8
+FROM python:3.10-slim
+
+#
+LABEL maintainer="mkhaikin@yandex.ru"
 
 #
 WORKDIR /app
 
 #
-RUN pip install --no-cache-dir -U pip
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONBUFFERED 1
 
 #
-COPY requirements.txt /tmp/requirements.txt
+COPY . .
 
 #
-RUN pip install --no-cache-dir --upgrade -r /tmp/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 #
-RUN pip install psycopg2
-#
-COPY ./app /app
-
-#
-# EXPOSE 8000
-
-#
-CMD ["uvicorn", "app.main:app", "--reload", "--workers", "1", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["uvicorn", "app.main:app", "--reload", "--workers", "1", "--host", "0.0.0.0", "--port", "8000"]

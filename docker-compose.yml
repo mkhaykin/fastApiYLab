@@ -4,16 +4,15 @@ version: "3.9"
 
 services:
   db:
+    image: postgres:15.1-alpine
     container_name: postgres
-    image: postgres:latest
-    restart: always
+    restart: on-failure
     environment:
-      POSTGRES_HOST_AUTH_METHOD: "trust"
       POSTGRES_DB: "fastapiylab"
       POSTGRES_USER: "fastapiylab"
       POSTGRES_PASSWORD: "password123"
     ports:
-      - "5432:5432"
+     - "5432:5432"
 #    volumes:
 #      - ./data:/var/lib/postgresql/data
 
@@ -22,11 +21,11 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: fastapi
-    image: fast-api:latest
-#    restart: always
+    # image: fast-api:latest
+    restart: on-failure
     environment:
         POSTGRES_HOST: "db"
-        DATABASE_PORT: 5432
+        POSTGRES_PORT: 5432
         POSTGRES_DB: "fastapiylab"
         POSTGRES_USER: "fastapiylab"
         POSTGRES_PASSWORD: "password123"
@@ -34,8 +33,6 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    volumes:
-      - .:/app
     command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
 
 

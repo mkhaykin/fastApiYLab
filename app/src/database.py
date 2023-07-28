@@ -9,7 +9,7 @@ SQLALCHEMY_DATABASE_URL = "postgresql://{0}:{1}@{2}:{3}/{4}".format(
     settings.POSTGRES_USER,
     settings.POSTGRES_PASSWORD,
     settings.POSTGRES_HOST,
-    settings.DATABASE_PORT,
+    settings.POSTGRES_PORT,
     settings.POSTGRES_DB,
 )
 
