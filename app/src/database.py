@@ -1,19 +1,21 @@
-from sqlalchemy import create_engine
+from sqlalchemy.engine import create_engine
+from sqlalchemy.engine import URL
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from .config import settings
 
 
-SQLALCHEMY_DATABASE_URL = "postgresql://{0}:{1}@{2}:{3}/{4}".format(
-    settings.POSTGRES_USER,
-    settings.POSTGRES_PASSWORD,
-    settings.POSTGRES_HOST,
-    settings.POSTGRES_PORT,
-    settings.POSTGRES_DB,
+SQLALCHEMY_DATABASE_URL = URL.create(
+    drivername="postgresql",
+    username=settings.POSTGRES_USER,
+    password=settings.POSTGRES_PASSWORD,
+    host=settings.POSTGRES_HOST,
+    port=settings.POSTGRES_PORT,
+    database=settings.POSTGRES_DB,
 )
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 Session = sessionmaker(engine)
 Base = declarative_base()
 
