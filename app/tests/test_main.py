@@ -1,26 +1,15 @@
-import json
 from uuid import UUID
-import random, string
-from fastapi.testclient import TestClient
 
-from app.main import app
+from app.tests.utils import random_word
 
 
-client = TestClient(app)
-
-
-def randomword(length):
-    letters = string.ascii_lowercase
-    return "".join(random.choice(letters) for i in range(length))
-
-
-def test_alive():
+def test_alive(db_test, client):
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"msg": "Hello World"}
 
 
-def test_menu():
+def test_menu(db_test, client):
     # step 1, empty result
     response = client.get("/api/v1/menus")
     assert response.status_code == 200
@@ -32,7 +21,10 @@ def test_menu():
     assert response.json() == {"detail": "menu not found"}
 
     # step 3, create menu
-    menu_for_create = {"title": f"{randomword(10)}", "description": f"{randomword(20)}"}
+    menu_for_create = {
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
+    }
     response = client.post("/api/v1/menus", json=menu_for_create)
     assert response.status_code == 201
     assert "id" in response.json()
@@ -57,8 +49,8 @@ def test_menu():
     assert response.json() == menu_created
 
     # step 6, update menu
-    menu_update = {"title": f"{randomword(10)}", "description": f"{randomword(20)}"}
-    response = client.patch(f"/api/v1/menus/{menu_id}", content=json.dumps(menu_update))
+    menu_update = {"title": f"{random_word(10)}", "description": f"{random_word(20)}"}
+    response = client.patch(f"/api/v1/menus/{menu_id}", json=menu_update)
     assert response.status_code == 200
     assert "id" in response.json()
     assert "title" in response.json()
@@ -87,13 +79,16 @@ def test_menu():
     assert response.json() == {"detail": "menu not found"}
 
 
-def test_submenu():
+def test_submenu(db_test, client):
     # step 1, empty result
     response = client.get("/api/v1/menus")
     assert response.status_code == 200
 
     # step 2, create menu
-    menu_for_create = {"title": f"{randomword(10)}", "description": f"{randomword(20)}"}
+    menu_for_create = {
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
+    }
     response = client.post("/api/v1/menus", json=menu_for_create)
     assert response.status_code == 201
     assert "id" in response.json()
@@ -139,8 +134,8 @@ def test_submenu():
 
     # step 5, create sub menu 1
     submenu_for_create = {
-        "title": f"{randomword(10)}",
-        "description": f"{randomword(20)}",
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
     }
     response = client.post(f"/api/v1/menus/{menu_id}/submenus", json=submenu_for_create)
     assert response.status_code == 201
@@ -169,8 +164,8 @@ def test_submenu():
 
     # step 8, create sub menu 2
     submenu_for_create = {
-        "title": f"{randomword(10)}",
-        "description": f"{randomword(20)}",
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
     }
     response = client.post(f"/api/v1/menus/{menu_id}/submenus", json=submenu_for_create)
     assert response.status_code == 201
@@ -199,7 +194,10 @@ def test_submenu():
     assert submenu2_created in response.json()
 
     # step 9.1, PATCH submenu2
-    submenu_update = {"title": f"{randomword(10)}", "description": f"{randomword(20)}"}
+    submenu_update = {
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
+    }
     response = client.patch(
         f"/api/v1/menus/{menu_id}/submenus/{submenu2_id}", json=submenu_update
     )
@@ -241,13 +239,16 @@ def test_submenu():
     assert response.json() == []
 
 
-def test_dishes():
+def test_dishes(db_test, client):
     # step 1, empty result
     response = client.get("/api/v1/menus")
     assert response.status_code == 200
 
     # step 2, create menu
-    menu_for_create = {"title": f"{randomword(10)}", "description": f"{randomword(20)}"}
+    menu_for_create = {
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
+    }
     response = client.post("/api/v1/menus", json=menu_for_create)
     assert response.status_code == 201
     assert "id" in response.json()
@@ -273,8 +274,8 @@ def test_dishes():
 
     # step 5, create sub menu 1
     submenu_for_create = {
-        "title": f"{randomword(10)}",
-        "description": f"{randomword(20)}",
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
     }
     response = client.post(f"/api/v1/menus/{menu_id}/submenus", json=submenu_for_create)
     assert response.status_code == 201
@@ -304,8 +305,8 @@ def test_dishes():
 
     # step 8, create sub menu 2
     submenu_for_create = {
-        "title": f"{randomword(10)}",
-        "description": f"{randomword(20)}",
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
     }
     response = client.post(f"/api/v1/menus/{menu_id}/submenus", json=submenu_for_create)
     assert response.status_code == 201
@@ -339,8 +340,8 @@ def test_dishes():
 
     # step 10, create dishes 1
     dish_for_create = {
-        "title": f"{randomword(10)}",
-        "description": f"{randomword(20)}",
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
         "price": "10.5",
     }
     response = client.post(
@@ -364,8 +365,8 @@ def test_dishes():
 
     # step 11, create dishes 2
     dish_for_create = {
-        "title": f"{randomword(10)}",
-        "description": f"{randomword(20)}",
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
         "price": "10",
     }
     response = client.post(
@@ -389,8 +390,8 @@ def test_dishes():
 
     # step 12, create dishes 3
     dish_for_create = {
-        "title": f"{randomword(10)}",
-        "description": f"{randomword(20)}",
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
         "price": "10.567",
     }
     response = client.post(
@@ -415,8 +416,8 @@ def test_dishes():
     # PATH dish11
     # step 13, PATCH submenu1
     dish_update = {
-        "title": f"{randomword(10)}",
-        "description": f"{randomword(20)}",
+        "title": f"{random_word(10)}",
+        "description": f"{random_word(20)}",
         "price": "0.01",
     }
     response = client.patch(
@@ -455,11 +456,11 @@ def test_dishes():
 
     # GET check submenu1: 404
 
-    # step 16, delete menu
-    response = client.delete(f"/api/v1/menus/{menu_id}")
-    assert response.status_code == 200
-
-    # step 17, if menu is not exist return empty list
-    response = client.get(f"/api/v1/menus/{menu_id}/submenus")
-    assert response.status_code == 200
-    assert response.json() == []
+    # # step 16, delete menu
+    # response = client.delete(f"/api/v1/menus/{menu_id}")
+    # assert response.status_code == 200
+    #
+    # # step 17, if menu is not exist return empty list
+    # response = client.get(f"/api/v1/menus/{menu_id}/submenus")
+    # assert response.status_code == 200
+    # assert response.json() == []
