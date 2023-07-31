@@ -1,12 +1,14 @@
 from uuid import UUID
+
 from fastapi import APIRouter
-from fastapi import HTTPException
 from fastapi import Depends
+from fastapi import HTTPException
+
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-import app.src.models as models
 from app.src.database import get_db
+import app.src.models as models
 from app.src.schemas import SubMenus as SchemaSubMenus
 from app.src.schemas import UpdateSubMenu as SchemaUpdateSubMenu
 

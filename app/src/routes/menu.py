@@ -1,4 +1,5 @@
 from uuid import UUID
+
 from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import Depends
@@ -6,10 +7,10 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
+from app.src.database import get_db
 import app.src.models as models
-from ..database import get_db
-from ..schemas import Menus as SchemaMenus
-from ..schemas import UpdateMenu as SchemaUpdateMenu
+from app.src.schemas import Menus as SchemaMenus
+from app.src.schemas import UpdateMenu as SchemaUpdateMenu
 
 
 router = APIRouter()

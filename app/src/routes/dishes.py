@@ -1,15 +1,17 @@
 from uuid import UUID
+
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
+
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
+from app.src.database import get_db
 import app.src.models as models
-from ..database import get_db
-from ..schemas import Dishes as SchemaDishes
-from ..schemas import UpdateDish as SchemaUpdateDishes
+from app.src.schemas import Dishes as SchemaDishes
+from app.src.schemas import UpdateDish as SchemaUpdateDishes
 
 
 router = APIRouter()
