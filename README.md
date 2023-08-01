@@ -1,7 +1,8 @@
 # YLab task 2
 
 ## Переменные среды
-Для запуска и тестирования проекта, требуется файл `.env` с переменными окружения.
+Для запуска и тестирования проекта, требуется создать файл `.env` с переменными окружения.  
+Пример файла: `.env.example`
 ### Параметры
 - `POSTGRES_HOST` - имя хоста
 - `POSTGRES_PORT` - порт
@@ -9,30 +10,22 @@
 - `POSTGRES_USER` - пользователь
 - `POSTGRES_PASSWORD` - пароль
 
-### Пример файла
-```
-POSTGRES_HOST=127.0.0.1
-POSTGRES_PORT=5432
-POSTGRES_DB=fastapiylab
-POSTGRES_USER=fastapiylab
-POSTGRES_PASSWORD=password123
-```
 `{POSTGRES_HOST}` используется только для локального запуска и в контейнере для запуска тестов, в docker-compose устанавливается значение `db`.
 
 ## Запуск через docker
-```bat
+```sh
 docker-compose up -d
 ```
 Перед выполнением создайте файл переменных окружения (`.env`). Пример файла см. [Переменные среды](#пример-файла).
 
 ## Запуск через ком строку
-```bat
+```sh
 uvicorn app.main:app --reload
 ```
 Перед запуском создайте файл переменных окружения (`.env`). Пример файла см. [Переменные среды](#пример-файла).
 
 ## Тестирование: docker
-```bat
+```sh
 docker build -f Dockerfile.test -t fastapiylab-test:latest .
 docker create --name fastapiylab-test --network=host --env-file=.env -t fastapiylab-test:latest
 docker start -i fastapiylab-test
@@ -53,7 +46,7 @@ Postman работает с прод базой, поэтому основную
 (для postman тестов она должна быть чистой перед каждым запуском). 
 
 ## Тестирование: cmd
-```bat
+```sh
 pytest -v
 ```
 Пользователю СУБД требуются права создание базы данных.  
