@@ -9,10 +9,13 @@
     00000000-0000-0000-0000-000000000001
         00000000-0000-0000-0000-000000000002
 """
+from sqlalchemy.orm.session import Session
+from starlette.testclient import TestClient
+
 from app.tests.utils import random_word
 
 
-def test_menu_exist(db_create_dishes, client):
+def test_menu_exist(db_create_dishes: Session, client: TestClient):
     response = client.get('/api/v1/menus/')
     assert response.status_code == 200
     assert len(response.json()) == 2
@@ -24,7 +27,7 @@ def test_menu_exist(db_create_dishes, client):
     assert response.status_code == 200
 
 
-def test_submenu_exist(db_create_dishes, client):
+def test_submenu_exist(db_create_dishes: Session, client: TestClient):
     response = client.get('/api/v1/menus/00000000-0000-0000-0000-000000000000/submenus')
     assert response.status_code == 200
     assert len(response.json()) == 2
@@ -50,7 +53,7 @@ def test_submenu_exist(db_create_dishes, client):
     assert response.status_code == 200
 
 
-def test_dishes_exist(db_create_dishes, client):
+def test_dishes_exist(db_create_dishes: Session, client: TestClient):
     response = client.get(
         '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
         'submenus/00000000-0000-0000-0000-000000000000/'
@@ -97,7 +100,7 @@ def test_dishes_exist(db_create_dishes, client):
     assert response.status_code == 200
 
 
-def test_start_counts(db_create_dishes, client):
+def test_start_counts(db_create_dishes: Session, client: TestClient):
     response = client.get('/api/v1/menus/00000000-0000-0000-0000-000000000000')
     assert response.status_code == 200
     assert response.json()['submenus_count'] == 2
@@ -109,7 +112,7 @@ def test_start_counts(db_create_dishes, client):
     assert response.json()['dishes_count'] == 0
 
 
-def test_submenus_count(db_create_dishes, client):
+def test_submenus_count(db_create_dishes: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     response = client.get('/api/v1/menus/00000000-0000-0000-0000-000000000000')
     assert response.status_code == 200
@@ -140,7 +143,7 @@ def test_submenus_count(db_create_dishes, client):
     assert response.json()['dishes_count'] == dishes_count
 
 
-def test_dishes_count(db_create_dishes, client):
+def test_dishes_count(db_create_dishes: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000000'
     response = client.get('/api/v1/menus/00000000-0000-0000-0000-000000000000')

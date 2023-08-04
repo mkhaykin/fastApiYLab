@@ -1,6 +1,9 @@
 """
     проверка на передачу не корректных id в json запроса (не в URL)
 """
+from sqlalchemy.orm.session import Session
+from starlette.testclient import TestClient
+
 from app.tests.utils import random_word
 from app.tests.utils_menu import (  # check_menu_eq_menu,; create_menu,; get_menu,; patch_menu,
     check_menu_in_menus,
@@ -8,7 +11,7 @@ from app.tests.utils_menu import (  # check_menu_eq_menu,; create_menu,; get_men
 )
 
 
-def test_wrong_id_in_json(db_test, client):
+def test_wrong_id_in_json(db_test: Session, client: TestClient):
     """
     переданный id в меню должен игнорироваться
     :param db_test:

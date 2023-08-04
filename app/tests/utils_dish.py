@@ -1,10 +1,10 @@
-from app.tests.database import TestingSession
+from starlette.testclient import TestClient
 
 from .utils import round_price
 
 
 def get_dish(
-    client: TestingSession, menu_id: str, submenu_id: str, dish_id: str
+    client: TestClient, menu_id: str, submenu_id: str, dish_id: str
 ) -> dict:
     response = client.get(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
@@ -18,7 +18,7 @@ def get_dish(
 
 
 def create_dish(
-    client: TestingSession,
+    client: TestClient,
     menu_id: str,
     submenu_id: str,
     title: str,
@@ -43,7 +43,7 @@ def create_dish(
 
 
 def patch_dish(
-    client: TestingSession,
+    client: TestClient,
     menu_id: str,
     submenu_id: str,
     dish_id: str,
@@ -69,12 +69,12 @@ def patch_dish(
     }
 
 
-def check_dish_eq_dish(client: TestingSession, menu_id: str, dish: dict):
+def check_dish_eq_dish(client: TestClient, menu_id: str, dish: dict):
     data = get_dish(client, menu_id, dish['submenu_id'], dish['id'])
     assert data == dish
 
 
-def check_dish_in_dishes(client: TestingSession, menu_id: str, dish: dict):
+def check_dish_in_dishes(client: TestClient, menu_id: str, dish: dict):
     response = client.get(f"/api/v1/menus/{menu_id}/submenus/{dish['submenu_id']}/dishes")
     assert response.status_code == 200
     assert response.json() and any(
@@ -86,7 +86,7 @@ def check_dish_in_dishes(client: TestingSession, menu_id: str, dish: dict):
 
 
 def check_dish_not_in_dishes(
-    client: TestingSession, menu_id: str, submenu_id: str, dish_id: str
+    client: TestClient, menu_id: str, submenu_id: str, dish_id: str
 ):
     response = client.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes')
     assert response.status_code == 200

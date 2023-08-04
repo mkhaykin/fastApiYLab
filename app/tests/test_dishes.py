@@ -6,6 +6,9 @@
     00000000-0000-0000-0000-000000000001
         00000000-0000-0000-0000-000000000002
 """
+from sqlalchemy.orm.session import Session
+from starlette.testclient import TestClient
+
 from app.tests.utils import random_word
 from app.tests.utils_dish import (
     check_dish_eq_dish,
@@ -16,7 +19,7 @@ from app.tests.utils_dish import (
 )
 
 
-def test_menu_exist(db_create_submenus, client):
+def test_menu_exist(db_create_submenus: Session, client: TestClient):
     # проверка фикстуры
     response = client.get('/api/v1/menus/00000000-0000-0000-0000-000000000000')
     assert response.status_code == 200
@@ -24,7 +27,7 @@ def test_menu_exist(db_create_submenus, client):
     assert response.status_code == 200
 
 
-def test_submenu_exist(db_create_submenus, client):
+def test_submenu_exist(db_create_submenus: Session, client: TestClient):
     # проверка фикстуры
     response = client.get(
         '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
@@ -43,7 +46,7 @@ def test_submenu_exist(db_create_submenus, client):
     assert response.status_code == 200
 
 
-def test_dishes(db_create_submenus, client):
+def test_dishes(db_create_submenus: Session, client: TestClient):
     response = client.get(
         '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
         'submenus/00000000-0000-0000-0000-000000000000/dishes'
@@ -52,7 +55,7 @@ def test_dishes(db_create_submenus, client):
     # assert not response.json()
 
 
-def test_dish_not_found(db_create_submenus, client):
+def test_dish_not_found(db_create_submenus: Session, client: TestClient):
     response = client.get(
         '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
         'submenus/00000000-0000-0000-0000-000000000000/'
@@ -62,7 +65,7 @@ def test_dish_not_found(db_create_submenus, client):
     assert response.json() == {'detail': 'dish not found'}
 
 
-def test_dish_not_found_wrong_submenu(db_create_submenus, client):
+def test_dish_not_found_wrong_submenu(db_create_submenus: Session, client: TestClient):
     response = client.get(
         '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
         'submenus/00000000-0000-0000-0000-000000000002/'
@@ -72,7 +75,7 @@ def test_dish_not_found_wrong_submenu(db_create_submenus, client):
     assert response.json() == {'detail': 'submenu not found'}
 
 
-def test_create_dishes_fix(db_create_submenus, client):
+def test_create_dishes_fix(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000000'
 
@@ -86,7 +89,7 @@ def test_create_dishes_fix(db_create_submenus, client):
     )
 
 
-def test_create_dish_duplicate(db_create_submenus, client):
+def test_create_dish_duplicate(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(7)
@@ -111,7 +114,7 @@ def test_create_dish_duplicate(db_create_submenus, client):
     assert response.status_code == 409
 
 
-def test_create_dish_duplicate_another_submenu(db_create_submenus, client):
+def test_create_dish_duplicate_another_submenu(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000001'
     title = random_word(8)
@@ -136,7 +139,7 @@ def test_create_dish_duplicate_another_submenu(db_create_submenus, client):
     assert response.status_code == 409
 
 
-def test_create_dish_duplicate_another_menu(db_create_submenus, client):
+def test_create_dish_duplicate_another_menu(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000001'
     title = random_word(9)
@@ -165,7 +168,7 @@ def test_create_dish_duplicate_another_menu(db_create_submenus, client):
     assert response.json() == {'detail': 'submenu not found'}
 
 
-def test_create_dish_submenu_not_exist(db_create_submenus, client):
+def test_create_dish_submenu_not_exist(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000002'
     response = client.post(
@@ -180,7 +183,7 @@ def test_create_dish_submenu_not_exist(db_create_submenus, client):
     assert response.json() == {'detail': 'submenu not found'}
 
 
-def test_create_dish_menu_not_exist(db_create_submenus, client):
+def test_create_dish_menu_not_exist(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000003'
     submenu_id = '00000000-0000-0000-0000-000000000001'
     response = client.post(
@@ -195,7 +198,7 @@ def test_create_dish_menu_not_exist(db_create_submenus, client):
     assert response.json() == {'detail': 'menu not found'}
 
 
-def test_create_dish(db_create_submenus, client):
+def test_create_dish(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(10)
@@ -204,7 +207,7 @@ def test_create_dish(db_create_submenus, client):
     create_dish(client, menu_id, submenu_id, title, description, price)
 
 
-def test_create_dish_price_int(db_create_submenus, client):
+def test_create_dish_price_int(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(10)
@@ -213,7 +216,7 @@ def test_create_dish_price_int(db_create_submenus, client):
     create_dish(client, menu_id, submenu_id, title, description, price)
 
 
-def test_create_dish_price_float(db_create_submenus, client):
+def test_create_dish_price_float(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(5)
@@ -222,7 +225,7 @@ def test_create_dish_price_float(db_create_submenus, client):
     create_dish(client, menu_id, submenu_id, title, description, price)
 
 
-def test_create_dish_price_floor(db_create_submenus, client):
+def test_create_dish_price_floor(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(6)
@@ -231,7 +234,7 @@ def test_create_dish_price_floor(db_create_submenus, client):
     create_dish(client, menu_id, submenu_id, title, description, price)
 
 
-def test_create_dish_price_ceil(db_create_submenus, client):
+def test_create_dish_price_ceil(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(7)
@@ -240,7 +243,7 @@ def test_create_dish_price_ceil(db_create_submenus, client):
     create_dish(client, menu_id, submenu_id, title, description, price)
 
 
-def test_create_dish_and_check(db_create_submenus, client):
+def test_create_dish_and_check(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000000'
     # create
@@ -264,7 +267,7 @@ def test_create_dish_and_check(db_create_submenus, client):
     check_dish_in_dishes(client, menu_id, answer)
 
 
-def test_update_dish_and_check(db_create_submenus, client):
+def test_update_dish_and_check(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000001'
     # create
@@ -291,7 +294,7 @@ def test_update_dish_and_check(db_create_submenus, client):
     check_dish_in_dishes(client, menu_id, answer)
 
 
-def test_delete_dish_and_check(db_create_submenus, client):
+def test_delete_dish_and_check(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000001'
     # create
@@ -323,7 +326,7 @@ def test_delete_dish_and_check(db_create_submenus, client):
             check_dish_not_in_dishes(client, menu['id'], submenu['id'], dish_id)
 
 
-def test_delete_submenu_not_exist(db_create_submenus, client):
+def test_delete_submenu_not_exist(db_create_submenus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-000000000000'
     dish_id = '00000000-0000-0000-0000-000000000000'

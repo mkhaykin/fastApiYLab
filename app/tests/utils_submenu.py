@@ -1,7 +1,7 @@
-from app.tests.database import TestingSession
+from starlette.testclient import TestClient
 
 
-def get_submenu(client: TestingSession, menu_id: str, submenu_id: str) -> dict:
+def get_submenu(client: TestClient, menu_id: str, submenu_id: str) -> dict:
     response = client.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}')
     assert response.status_code == 200
     assert 'id' in response.json()
@@ -12,7 +12,7 @@ def get_submenu(client: TestingSession, menu_id: str, submenu_id: str) -> dict:
 
 
 def create_submenu(
-    client: TestingSession, menu_id: str, title: str, description: str
+    client: TestClient, menu_id: str, title: str, description: str
 ) -> str:
     response = client.post(
         f'/api/v1/menus/{menu_id}/submenus',
@@ -32,7 +32,7 @@ def create_submenu(
 
 
 def patch_submenu(
-    client: TestingSession, menu_id: str, submenu_id: str, title: str, description: str
+    client: TestClient, menu_id: str, submenu_id: str, title: str, description: str
 ):
     data = get_submenu(client, menu_id, submenu_id)
     dishes_count = data['dishes_count']
@@ -54,12 +54,12 @@ def patch_submenu(
     }
 
 
-def check_submenu_eq_submenu(client: TestingSession, submenu: dict):
+def check_submenu_eq_submenu(client: TestClient, submenu: dict):
     data = get_submenu(client, submenu['menu_id'], submenu['id'])
     assert data == submenu
 
 
-def check_submenu_in_submenus(client: TestingSession, submenu: dict):
+def check_submenu_in_submenus(client: TestClient, submenu: dict):
     response = client.get(f"/api/v1/menus/{submenu['menu_id']}/submenus/")
     assert response.status_code == 200
     assert response.json() and any(
@@ -71,7 +71,7 @@ def check_submenu_in_submenus(client: TestingSession, submenu: dict):
 
 
 def check_submenu_not_in_submenus(
-    client: TestingSession, menu_id: str, submenu_id: str
+    client: TestClient, menu_id: str, submenu_id: str
 ):
     response = client.get(f'/api/v1/menus/{menu_id}/submenus/')
     assert response.status_code == 200

@@ -1,3 +1,5 @@
+from typing import Generator
+
 from sqlalchemy.engine import URL, create_engine
 from sqlalchemy.orm.session import sessionmaker
 
@@ -16,7 +18,7 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 TestingSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def override_get_db():
+def override_get_db() -> Generator:
     db = TestingSession()
     try:
         yield db

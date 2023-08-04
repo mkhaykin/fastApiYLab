@@ -3,6 +3,9 @@
     00000000-0000-0000-0000-000000000000
     00000000-0000-0000-0000-000000000001
 """
+from sqlalchemy.orm.session import Session
+from starlette.testclient import TestClient
+
 from app.tests.utils import random_word
 from app.tests.utils_submenu import (
     check_submenu_eq_submenu,
@@ -14,20 +17,20 @@ from app.tests.utils_submenu import (
 )
 
 
-def test_menu_exist(db_create_menus, client):
+def test_menu_exist(db_create_menus: Session, client: TestClient):
     response = client.get('/api/v1/menus/00000000-0000-0000-0000-000000000000')
     assert response.status_code == 200
     response = client.get('/api/v1/menus/00000000-0000-0000-0000-000000000001')
     assert response.status_code == 200
 
 
-def test_submenus(db_create_menus, client):
+def test_submenus(db_create_menus: Session, client: TestClient):
     response = client.get('/api/v1/menus/00000000-0000-0000-0000-000000000000/submenus')
     assert response.status_code == 200
     assert not response.json()
 
 
-def test_submenu_not_found(db_create_menus, client):
+def test_submenu_not_found(db_create_menus: Session, client: TestClient):
     # TODO перенести в отдельный блок тестов. При перемешанном тестировании субменю может существовать ...
     response = client.get(
         '/api/v1/menus/00000000-0000-0000-0000-000000000000/submenus/00000000-0000-0000-0000-000000000000'
@@ -36,14 +39,14 @@ def test_submenu_not_found(db_create_menus, client):
     assert response.json() == {'detail': 'submenu not found'}
 
 
-def test_create_submenu_fix(db_create_menus, client):
+def test_create_submenu_fix(db_create_menus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     create_submenu(
         client, menu_id, title='Submenu 1', description='Submenu 1 description'
     )
 
 
-def test_create_submenu_duplicate(db_create_menus, client):
+def test_create_submenu_duplicate(db_create_menus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     create_submenu(
         client, menu_id, title='Submenu 2', description='Submenu 2 description'
@@ -55,7 +58,7 @@ def test_create_submenu_duplicate(db_create_menus, client):
     assert response.status_code == 409
 
 
-def test_create_submenu_duplicate_another_submenu(db_create_menus, client):
+def test_create_submenu_duplicate_another_submenu(db_create_menus: Session, client: TestClient):
     # перенести в отдельную проверку дублей, т.к. опять завязано на верхнем тесте
     menu_id = '00000000-0000-0000-0000-000000000001'
     response = client.post(
@@ -65,7 +68,7 @@ def test_create_submenu_duplicate_another_submenu(db_create_menus, client):
     assert response.status_code == 409
 
 
-def test_create_submenu_menu_not_exist(db_create_menus, client):
+def test_create_submenu_menu_not_exist(db_create_menus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000002'
     response = client.post(
         f'/api/v1/menus/{menu_id}/submenus',
@@ -75,14 +78,14 @@ def test_create_submenu_menu_not_exist(db_create_menus, client):
     assert response.json() == {'detail': 'menu not found'}
 
 
-def test_create_submenu(db_create_menus, client):
+def test_create_submenu(db_create_menus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(10)
     description = random_word(20)
     create_submenu(client, menu_id, title, description)
 
 
-def test_create_submenu_and_check(db_create_menus, client):
+def test_create_submenu_and_check(db_create_menus: Session, client: TestClient):
     # create
     menu_id = '00000000-0000-0000-0000-000000000001'
     title = random_word(11)
@@ -104,7 +107,7 @@ def test_create_submenu_and_check(db_create_menus, client):
     check_submenu_in_submenus(client, answer)
 
 
-def test_update_submenu_and_check(db_create_menus, client):
+def test_update_submenu_and_check(db_create_menus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000001'
     # create
     submenu_id = create_submenu(client, menu_id, random_word(12), random_word(20))
@@ -128,7 +131,7 @@ def test_update_submenu_and_check(db_create_menus, client):
     check_submenu_in_submenus(client, answer)
 
 
-def test_delete_submenu_and_check(db_create_menus, client):
+def test_delete_submenu_and_check(db_create_menus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000001'
     # create
     submenu_id = create_submenu(client, menu_id, random_word(14), random_word(20))
@@ -150,7 +153,7 @@ def test_delete_submenu_and_check(db_create_menus, client):
         check_submenu_not_in_submenus(client, menu['id'], submenu_id)
 
 
-def test_delete_submenu_not_exist(db_test, client):
+def test_delete_submenu_not_exist(db_create_menus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-000000000000'
     submenu_id = '00000000-0000-0000-0000-999999999999'
 
@@ -159,7 +162,7 @@ def test_delete_submenu_not_exist(db_test, client):
     assert response.json() == {'detail': 'submenu not found'}
 
 
-def test_delete_submenu_menu_not_exist(db_test, client):
+def test_delete_submenu_menu_not_exist(db_create_menus: Session, client: TestClient):
     menu_id = '00000000-0000-0000-0000-999999999999'
     submenu_id = '00000000-0000-0000-0000-000000000000'
 
