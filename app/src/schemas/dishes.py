@@ -4,14 +4,20 @@ from pydantic import BaseModel
 from pydantic import Field
 
 
-class Dishes(BaseModel):
-    id: Optional[UUID] = Field(default_factory=uuid4)
+class BaseDishes(BaseModel):
     title: str
     description: Optional[str] = None
     price: str
 
 
-class UpdateDish(BaseModel):
-    title: Optional[str]
-    description: Optional[str]
-    price: Optional[str]
+class UpdateDishes(BaseDishes):
+    pass
+
+
+class CreateDishes(BaseDishes):
+    submenu_id: Optional[UUID] = None
+    pass
+
+
+class Dishes(CreateDishes):
+    id: UUID

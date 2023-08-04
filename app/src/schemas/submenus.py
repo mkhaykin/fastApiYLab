@@ -4,12 +4,18 @@ from pydantic import BaseModel
 from pydantic import Field
 
 
-class SubMenus(BaseModel):
-    id: Optional[UUID] = Field(default_factory=uuid4)
+class BaseSubMenus(BaseModel):
     title: str
-    description: Optional[str] = None
-
-
-class UpdateSubMenu(BaseModel):
-    title: Optional[str]
     description: Optional[str]
+
+
+class CreateSubMenus(BaseSubMenus):
+    menu_id: Optional[UUID] = None
+
+
+class UpdateSubMenus(BaseSubMenus):
+    pass
+
+
+class SubMenus(CreateSubMenus):
+    id: UUID

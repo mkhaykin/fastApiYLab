@@ -1,10 +1,11 @@
+import uvicorn
 from fastapi import FastAPI
 
-from .src.database import create_tables
+from app.src.database import create_tables
 
-from .src.routes.menu import router as menu_router
-from .src.routes.submenu import router as submenu_router
-from .src.routes.dishes import router as dishes_router
+from app.src.routes.menus import router as menu_router
+from app.src.routes.submenus import router as submenu_router
+from app.src.routes.dishes import router as dishes_router
 
 create_tables()
 
@@ -18,3 +19,7 @@ app.include_router(dishes_router)
 @app.get("/")
 async def read_main():
     return {"msg": "Hello World"}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

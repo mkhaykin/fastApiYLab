@@ -1,6 +1,6 @@
 from sqlalchemy.engine import create_engine
 from sqlalchemy.engine import URL
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import sessionmaker
 
 from app.src.config import settings
@@ -15,9 +15,13 @@ SQLALCHEMY_DATABASE_URL = URL.create(
     database=settings.POSTGRES_DB,
 )
 
+
+class Base(DeclarativeBase):
+    pass
+
+
 engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 Session = sessionmaker(engine)
-Base = declarative_base()
 
 
 def get_db():

@@ -1,18 +1,11 @@
-from uuid import UUID
-
 from fastapi import APIRouter
 from fastapi import Depends
-from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
-
 from app.src.database import get_db
-import app.src.models as models
-from app.src.schemas import Dishes as SchemaDishes
-from app.src.schemas import UpdateDish as SchemaUpdateDishes
-
+import app.src.schemas as schemas
+from app.src.crud import crud_menus, crud_submenus, crud_dishes
+from .common import *
 
 router = APIRouter()
 
@@ -20,23 +13,14 @@ router = APIRouter()
 # GET /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes
 @router.get("/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes")
 async def get_dishes(menu_id: UUID, submenu_id: UUID, db: Session = Depends(get_db)):
-    db_menu = db.query(models.Menus).filter(models.Menus.id == menu_id).first()
-    if not db_menu:
+    # check menu | submenu | dish
+    try:
+        db_submenu = submenu_get(menu_id, submenu_id, db)
+    except:
         return []
-        # raise HTTPException(status_code=404, detail="menu not found")
-
-    db_submenu = (
-        db.query(models.SubMenus)
-        .filter(models.SubMenus.menu_id == menu_id, models.SubMenus.id == submenu_id)
-        .first()
-    )
-    if not db_submenu:
+    db_dishes = crud_dishes.get_by_submenu(submenu_id, db=db)
+    if not db_dishes or not db_submenu or db_submenu.menu_id != menu_id:
         return []
-        # raise HTTPException(status_code=404, detail="submenu not found")
-
-    db_dishes = (
-        db.query(models.Dishes).filter(models.Dishes.submenu_id == submenu_id).all()
-    )
     return jsonable_encoder(db_dishes, custom_encoder={float: str})
 
 
@@ -45,58 +29,28 @@ async def get_dishes(menu_id: UUID, submenu_id: UUID, db: Session = Depends(get_
 async def get_dish(
     menu_id: UUID, submenu_id: UUID, dish_id: UUID, db: Session = Depends(get_db)
 ):
-    db_menu = db.query(models.Menus).filter(models.Menus.id == menu_id).first()
-    if not db_menu:
-        raise HTTPException(status_code=404, detail="menu not found")
-
-    db_submenu = (
-        db.query(models.SubMenus)
-        .filter(models.SubMenus.menu_id == menu_id, models.SubMenus.id == submenu_id)
-        .first()
-    )
-    if not db_submenu:
-        raise HTTPException(status_code=404, detail="submenu not found")
-
-    db_dish = (
-        db.query(models.Dishes)
-        .filter(models.Dishes.id == dish_id, models.Dishes.submenu_id == submenu_id)
-        .first()
-    )
-    if not db_dish:
-        raise HTTPException(status_code=404, detail="dish not found")
-
+    db_dish = dish_get(menu_id, submenu_id, dish_id, db)
     return jsonable_encoder(db_dish, custom_encoder={float: str})
 
 
 # POST /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes
 @router.post("/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes", status_code=201)
 async def create_dish(
-    menu_id: UUID, submenu_id: UUID, dishes: SchemaDishes, db: Session = Depends(get_db)
+    menu_id: UUID, submenu_id: UUID, dishes: schemas.CreateDishes, db: Session = Depends(get_db)
 ):
-    db_menu = db.query(models.Menus).filter(models.Menus.id == menu_id).first()
-    if not db_menu:
-        raise HTTPException(status_code=404, detail="menu not found")
+    # check menu | submenu
+    _ = submenu_get(menu_id, submenu_id, db)
 
-    db_submenu = (
-        db.query(models.SubMenus)
-        .filter(models.SubMenus.menu_id == menu_id, models.SubMenus.id == submenu_id)
-        .first()
-    )
-    if not db_submenu:
-        raise HTTPException(status_code=404, detail="submenu not found")
+    # submenu_id in schema must be equal submenu_id in arguments
+    if dishes.submenu_id and dishes.submenu_id != submenu_id:
+        raise HTTPException(status_code=424, detail="submenu_id's are different")
+    dishes.submenu_id = submenu_id
 
-    db_dish = models.Dishes(**dishes.model_dump(), submenu_id=submenu_id)
     try:
-        db.add(db_dish)
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=409, detail=f"the dish is duplicated")
-    except Exception:
-        db.rollback()
-        raise HTTPException(status_code=424, detail=f"DB error while creating dish")
+        db_dish = crud_dishes.create(dishes, db=db)
+    except Exception as e:
+        raise HTTPException(status_code=e.args[0], detail=e.args[1])
 
-    db.refresh(db_dish)
     return jsonable_encoder(db_dish, custom_encoder={float: str})
 
 
@@ -108,40 +62,13 @@ async def patch_dish(
     menu_id: UUID,
     submenu_id: UUID,
     dish_id: UUID,
-    dish: SchemaUpdateDishes,
+    dish: schemas.UpdateDishes,
     db: Session = Depends(get_db),
 ):
-    db_menu = db.query(models.Menus).filter(models.Menus.id == menu_id).first()
-    if not db_menu:
-        raise HTTPException(status_code=404, detail="menu not found")
+    # check menu | submenu | dish
+    _ = dish_get(menu_id, submenu_id, dish_id, db)
 
-    db_submenu = (
-        db.query(models.SubMenus)
-        .filter(models.SubMenus.menu_id == menu_id, models.SubMenus.id == submenu_id)
-        .first()
-    )
-    if not db_submenu:
-        raise HTTPException(status_code=404, detail="submenu not found")
-
-    db_dish = (
-        db.query(models.Dishes)
-        .filter(models.Dishes.submenu_id == submenu_id, models.Dishes.id == dish_id)
-        .first()
-    )
-    if not db_dish:
-        raise HTTPException(status_code=404, detail="dish not found")
-    try:
-        for column, value in dish.model_dump(exclude_unset=True).items():
-            setattr(db_dish, column, value)
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=409, detail=f"the dish is duplicated")
-    except Exception:
-        db.rollback()
-        raise HTTPException(status_code=424, detail=f"DB error while update submenu")
-
-    db.refresh(db_dish)
+    db_dish = crud_dishes.update(dish_id, dish, db=db)
     return jsonable_encoder(db_dish, custom_encoder={float: str})
 
 
@@ -150,31 +77,11 @@ async def patch_dish(
 async def delete_dish(
     menu_id: UUID, submenu_id: UUID, dish_id: UUID, db: Session = Depends(get_db)
 ):
-    db_menu = db.query(models.Menus).filter(models.Menus.id == menu_id).first()
-    if not db_menu:
-        raise HTTPException(status_code=404, detail="menu not found")
-
-    db_submenu = (
-        db.query(models.SubMenus)
-        .filter(models.SubMenus.menu_id == menu_id, models.SubMenus.id == submenu_id)
-        .first()
-    )
-    if not db_submenu:
-        raise HTTPException(status_code=404, detail=f"submenu not found")
-
-    db_dish = (
-        db.query(models.Dishes)
-        .filter(models.Dishes.submenu_id == submenu_id, models.Dishes.id == dish_id)
-        .first()
-    )
-    if not db_dish:
-        raise HTTPException(status_code=404, detail="dish not found")
+    # check menu | submenu | dish
+    _ = dish_get(menu_id, submenu_id, dish_id, db)
 
     try:
-        db.delete(db_dish)
-        db.commit()
-    except Exception:
-        db.rollback()
-        raise HTTPException(status_code=424, detail=f"DB error while deleting submenu")
-
+        crud_dishes.delete(dish_id, db=db)
+    except Exception as e:
+        raise HTTPException(status_code=e.args[0], detail=e.args[1])
     return
