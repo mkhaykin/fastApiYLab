@@ -8,7 +8,7 @@ from app.tests.utils_menu import (
     patch_menu,
     check_menu_in_menus,
     check_menu_not_in_menus,
-    check_menu_in_menu,
+    check_menu_eq_menu,
 )
 
 
@@ -58,7 +58,7 @@ def test_create_menu_and_find_it(db_test, client):
         "submenus_count": 0,
         "dishes_count": 0,
     }
-    check_menu_in_menu(client, answer)
+    check_menu_eq_menu(client, answer)
 
 
 def test_create_menu_and_find_it_in_menus(db_test, client):
@@ -94,7 +94,7 @@ def test_update_menu_and_find_it(db_test, client):
         "submenus_count": 0,
         "dishes_count": 0,
     }
-    check_menu_in_menu(client, answer)
+    check_menu_eq_menu(client, answer)
 
 
 def test_update_menu_and_find_it_in_menus(db_test, client):
@@ -112,7 +112,7 @@ def test_update_menu_and_find_it_in_menus(db_test, client):
         "submenus_count": 0,
         "dishes_count": 0,
     }
-    check_menu_in_menu(client, answer)
+    check_menu_eq_menu(client, answer)
 
 
 def test_delete_menu(db_test, client):

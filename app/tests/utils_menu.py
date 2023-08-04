@@ -57,7 +57,7 @@ def patch_menu(client: TestingSession, menu_id: UUID, title: str, description: s
     }
 
 
-def check_menu_in_menu(client: TestingSession, menu: dict):
+def check_menu_eq_menu(client: TestingSession, menu: dict):
     data = get_menu(client, menu["id"])
     assert data == menu
 
@@ -82,4 +82,3 @@ def check_menu_not_in_menus(client: TestingSession, menu_id: UUID):
             response.json(),
         )
     )
-
