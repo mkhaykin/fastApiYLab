@@ -1,40 +1,37 @@
 from uuid import UUID
 
-from fastapi import APIRouter
-from fastapi import Depends
-from fastapi import HTTPException
-
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.src import schemas
+from app.src.crud import crud_submenus
 from app.src.database import get_db
-import app.src.schemas as schemas
 
-from app.src.crud import crud_menus, crud_submenus
-from .common import *
+from .common import menu_get, submenu_get
 
 router = APIRouter()
 
 
 # GET /app/v1/menus/{{api_test_menu_id}}/submenus
-@router.get("/api/v1/menus/{menu_id}/submenus")
+@router.get('/api/v1/menus/{menu_id}/submenus')
 async def get_submenus(menu_id: UUID, db: Session = Depends(get_db)):
     # check menu | submenu | dish
     try:
         _ = menu_get(menu_id, db)
-    except:
+    except Exception:
         return []
     return crud_submenus.get_by_menu(menu_id, db)
 
 
 # GET /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}
-@router.get("/api/v1/menus/{menu_id}/submenus/{submenu_id}")
+@router.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}')
 async def get_submenu(menu_id: UUID, submenu_id: UUID, db: Session = Depends(get_db)):
     # check menu | submenu and return
     return submenu_get(menu_id, submenu_id, db)
 
 
 # POST /app/v1/menus/{{api_test_menu_id}}/submenus
-@router.post("/api/v1/menus/{menu_id}/submenus", status_code=201)
+@router.post('/api/v1/menus/{menu_id}/submenus', status_code=201)
 async def create_submenu(
     menu_id: UUID, submenu: schemas.CreateSubMenus, db: Session = Depends(get_db)
 ):
@@ -42,7 +39,7 @@ async def create_submenu(
     _ = menu_get(menu_id, db)
 
     if submenu.menu_id and submenu.menu_id != menu_id:
-        raise HTTPException(status_code=424, detail="menu_id != menu_id")
+        raise HTTPException(status_code=424, detail='menu_id != menu_id')
 
     submenu.menu_id = menu_id
     try:
@@ -54,7 +51,7 @@ async def create_submenu(
 
 
 # PATCH /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}
-@router.patch("/api/v1/menus/{menu_id}/submenus/{submenu_id}", status_code=200)
+@router.patch('/api/v1/menus/{menu_id}/submenus/{submenu_id}', status_code=200)
 async def patch_submenu(
     menu_id: UUID,
     submenu_id: UUID,
@@ -72,7 +69,7 @@ async def patch_submenu(
 
 
 # DELETE /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}
-@router.delete("/api/v1/menus/{menu_id}/submenus/{submenu_id}")
+@router.delete('/api/v1/menus/{menu_id}/submenus/{submenu_id}')
 async def delete_submenu(
     menu_id: UUID, submenu_id: UUID, db: Session = Depends(get_db)
 ):

@@ -1,14 +1,15 @@
 from uuid import UUID
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.src.crud import crud_menus, crud_submenus, crud_dishes
+from app.src.crud import crud_dishes, crud_menus, crud_submenus
 
 
 def menu_get(menu_id: UUID, db: Session):
     db_menu = crud_menus.get(menu_id, db=db)
     if not db_menu:
-        raise HTTPException(status_code=404, detail="menu not found")
+        raise HTTPException(status_code=404, detail='menu not found')
     return db_menu
 
 
@@ -18,7 +19,7 @@ def submenu_get(menu_id: UUID, submenu_id: UUID, db: Session):
 
     db_submenu = crud_submenus.get(submenu_id, db=db)
     if not db_submenu or db_submenu.menu_id != menu_id:
-        raise HTTPException(status_code=404, detail="submenu not found")
+        raise HTTPException(status_code=404, detail='submenu not found')
     return db_submenu
 
 
@@ -28,5 +29,5 @@ def dish_get(menu_id: UUID, submenu_id: UUID, dish_id: UUID, db: Session):
 
     db_dish = crud_dishes.get(dish_id, db=db)
     if not db_dish or db_dish.submenu_id != submenu_id:
-        raise HTTPException(status_code=404, detail="dish not found")
+        raise HTTPException(status_code=404, detail='dish not found')
     return db_dish

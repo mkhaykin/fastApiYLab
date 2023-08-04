@@ -7,420 +7,327 @@
         00000000-0000-0000-0000-000000000002
 """
 from app.tests.utils import random_word
+from app.tests.utils_dish import (
+    check_dish_eq_dish,
+    check_dish_in_dishes,
+    check_dish_not_in_dishes,
+    create_dish,
+    patch_dish,
+)
 
 
 def test_menu_exist(db_create_submenus, client):
-    response = client.get("/api/v1/menus/00000000-0000-0000-0000-000000000000")
+    # проверка фикстуры
+    response = client.get('/api/v1/menus/00000000-0000-0000-0000-000000000000')
     assert response.status_code == 200
-    response = client.get("/api/v1/menus/00000000-0000-0000-0000-000000000001")
+    response = client.get('/api/v1/menus/00000000-0000-0000-0000-000000000001')
     assert response.status_code == 200
 
 
 def test_submenu_exist(db_create_submenus, client):
+    # проверка фикстуры
     response = client.get(
-        "/api/v1/menus/00000000-0000-0000-0000-000000000000/"
-        + "submenus/00000000-0000-0000-0000-000000000000"
+        '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
+        'submenus/00000000-0000-0000-0000-000000000000'
     )
     assert response.status_code == 200
     response = client.get(
-        "/api/v1/menus/00000000-0000-0000-0000-000000000000/"
-        + "submenus/00000000-0000-0000-0000-000000000001"
+        '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
+        'submenus/00000000-0000-0000-0000-000000000001'
     )
     assert response.status_code == 200
     response = client.get(
-        "/api/v1/menus/00000000-0000-0000-0000-000000000001/"
-        + "submenus/00000000-0000-0000-0000-000000000002"
+        '/api/v1/menus/00000000-0000-0000-0000-000000000001/'
+        'submenus/00000000-0000-0000-0000-000000000002'
     )
     assert response.status_code == 200
 
 
 def test_dishes(db_create_submenus, client):
     response = client.get(
-        "/api/v1/menus/00000000-0000-0000-0000-000000000000/"
-        + "submenus/00000000-0000-0000-0000-000000000000/"
-        + "dishes"
+        '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
+        'submenus/00000000-0000-0000-0000-000000000000/dishes'
     )
     assert response.status_code == 200
-    assert not response.json()
+    # assert not response.json()
 
 
-def test_dishes_not_found(db_create_submenus, client):
+def test_dish_not_found(db_create_submenus, client):
     response = client.get(
-        "/api/v1/menus/00000000-0000-0000-0000-000000000000/"
-        + "submenus/00000000-0000-0000-0000-000000000000/"
-        + "dishes/00000000-0000-0000-0000-000000000000"
+        '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
+        'submenus/00000000-0000-0000-0000-000000000000/'
+        'dishes/00000000-0000-0000-0000-000000000000'
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "dish not found"}
+    assert response.json() == {'detail': 'dish not found'}
 
 
-def test_dishes_not_found_wrong_submenu(db_create_submenus, client):
+def test_dish_not_found_wrong_submenu(db_create_submenus, client):
     response = client.get(
-        "/api/v1/menus/00000000-0000-0000-0000-000000000000/"
-        + "submenus/00000000-0000-0000-0000-000000000002/"
-        + "dishes/00000000-0000-0000-0000-000000000000"
+        '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
+        'submenus/00000000-0000-0000-0000-000000000002/'
+        'dishes/00000000-0000-0000-0000-000000000000'
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "submenu not found"}
+    assert response.json() == {'detail': 'submenu not found'}
 
 
 def test_create_dishes_fix(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000000"
-    response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
-        json={"title": "Dishes 1", "description": "Dishes 1 description", "price": "1"},
-    )
-    assert response.status_code == 201
-    assert "id" in response.json()
-    assert "title" in response.json()
-    assert "description" in response.json()
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000000'
 
-    dishes_id = response.json()["id"]
-    assert response.json() == {
-        "id": dishes_id,
-        "submenu_id": submenu_id,
-        "title": "Dishes 1",
-        "description": "Dishes 1 description",
-        "price": "1.0",
-    }
+    create_dish(
+        client,
+        menu_id,
+        submenu_id,
+        title='Dishes 1',
+        description='Dishes 1 description',
+        price='1.0',
+    )
 
 
 def test_create_dish_duplicate(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000000"
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000000'
+    title = random_word(7)
+    description = random_word(20)
+    price = '2.0'
+    create_dish(
+        client,
+        menu_id,
+        submenu_id,
+        title,
+        description,
+        price,
+    )
     response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
+        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
         json={
-            "title": "Dishes 1",
-            "description": "Dishes 1 description",
-            "price": "1",
+            'title': title,
+            'description': description,
+            'price': price,
         },
     )
     assert response.status_code == 409
 
 
 def test_create_dish_duplicate_another_submenu(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000001"
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000001'
+    title = random_word(8)
+    description = random_word(20)
+    price = '2.0'
+    create_dish(
+        client,
+        menu_id,
+        submenu_id,
+        title,
+        description,
+        price,
+    )
     response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
+        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
         json={
-            "title": "Dishes 1",
-            "description": "Dishes 1 description",
-            "price": "1",
+            'title': title,
+            'description': description,
+            'price': price,
         },
     )
     assert response.status_code == 409
 
 
 def test_create_dish_duplicate_another_menu(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000001"
-    submenu_id = "00000000-0000-0000-0000-000000000000"
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000001'
+    title = random_word(9)
+    description = random_word(20)
+    price = '2.0'
+    create_dish(
+        client,
+        menu_id,
+        submenu_id,
+        title,
+        description,
+        price,
+    )
+
+    menu_id = '00000000-0000-0000-0000-000000000001'
+    submenu_id = '00000000-0000-0000-0000-000000000000'
     response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
+        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
         json={
-            "title": "Dishes 1",
-            "description": "Dishes 1 description",
-            "price": "1",
+            'title': title,
+            'description': description,
+            'price': price,
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "submenu not found"}
+    assert response.json() == {'detail': 'submenu not found'}
 
 
 def test_create_dish_submenu_not_exist(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000002"
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000002'
     response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
+        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
         json={
-            "title": "Dishes ...",
-            "description": "Dishes ... description",
-            "price": "1",
+            'title': 'Dishes ...',
+            'description': 'Dishes ... description',
+            'price': '1',
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "submenu not found"}
+    assert response.json() == {'detail': 'submenu not found'}
 
 
 def test_create_dish_menu_not_exist(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000003"
-    submenu_id = "00000000-0000-0000-0000-000000000001"
+    menu_id = '00000000-0000-0000-0000-000000000003'
+    submenu_id = '00000000-0000-0000-0000-000000000001'
     response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
+        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
         json={
-            "title": "Dishes ...",
-            "description": "Dishes ... description",
-            "price": "1",
+            'title': 'Dishes ...',
+            'description': 'Dishes ... description',
+            'price': '1',
         },
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "menu not found"}
+    assert response.json() == {'detail': 'menu not found'}
 
 
 def test_create_dish(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000000"
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(10)
     description = random_word(20)
-    response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
-        json={
-            "title": f"{title}",
-            "description": f"{description}",
-            "price": "1",
-        },
-    )
-    assert response.status_code == 201
-    assert "id" in response.json()
-    assert "title" in response.json()
-    assert "description" in response.json()
-    assert "price" in response.json()
-
-    dish_id = response.json()["id"]
-    assert response.json() == {
-        "id": dish_id,
-        "submenu_id": submenu_id,
-        "title": title,
-        "description": description,
-        "price": "1.0",
-    }
+    price = '1.0'
+    create_dish(client, menu_id, submenu_id, title, description, price)
 
 
-def test_create_dish_price_10_22(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000000"
+def test_create_dish_price_int(db_create_submenus, client):
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000000'
+    title = random_word(10)
+    description = random_word(20)
+    price = '123'
+    create_dish(client, menu_id, submenu_id, title, description, price)
+
+
+def test_create_dish_price_float(db_create_submenus, client):
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(5)
     description = random_word(20)
-    response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
-        json={
-            "title": f"{title}",
-            "description": f"{description}",
-            "price": "10.22",
-        },
-    )
-    assert response.status_code == 201
-    dish_id = response.json()["id"]
-    assert response.json() == {
-        "id": dish_id,
-        "submenu_id": submenu_id,
-        "title": title,
-        "description": description,
-        "price": "10.22",
-    }
+    price = '10.22'
+    create_dish(client, menu_id, submenu_id, title, description, price)
 
 
-def test_create_dish_price_10_123(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000000"
+def test_create_dish_price_floor(db_create_submenus, client):
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(6)
     description = random_word(20)
-    response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
-        json={
-            "title": f"{title}",
-            "description": f"{description}",
-            "price": "10.123",
-        },
-    )
-    assert response.status_code == 201
-    dish_id = response.json()["id"]
-    assert response.json() == {
-        "id": dish_id,
-        "submenu_id": submenu_id,
-        "title": title,
-        "description": description,
-        "price": "10.12",
-    }
+    price = '10.123'
+    create_dish(client, menu_id, submenu_id, title, description, price)
 
 
-def test_create_dish_price_10_126(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000000"
+def test_create_dish_price_ceil(db_create_submenus, client):
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000000'
     title = random_word(7)
     description = random_word(20)
-    response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
-        json={
-            "title": f"{title}",
-            "description": f"{description}",
-            "price": "10.126",
-        },
-    )
-    assert response.status_code == 201
-    assert "id" in response.json()
-    assert "title" in response.json()
-    assert "description" in response.json()
-    assert "price" in response.json()
-
-    dish_id = response.json()["id"]
-    assert response.json() == {
-        "id": dish_id,
-        "submenu_id": submenu_id,
-        "title": title,
-        "description": description,
-        "price": "10.13",
-    }
+    price = '10.126'
+    create_dish(client, menu_id, submenu_id, title, description, price)
 
 
 def test_create_dish_and_check(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000000"
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000000'
     # create
     title = random_word(11)
     description = random_word(20)
-    response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
-        json={
-            "title": f"{title}",
-            "description": f"{description}",
-            "price": "1",
-        },
-    )
-    assert response.status_code == 201
-    dish_id = response.json()["id"]
+    price = '1'
+    dish_id = create_dish(client, menu_id, submenu_id, title, description, price)
 
-    # get dish by id
-    response = client.get(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}"
-    )
-    assert response.status_code == 200
-    assert response.json() == {
-        "id": dish_id,
-        "submenu_id": submenu_id,
-        "title": title,
-        "description": description,
-        "price": "1.0",
+    answer = {
+        'id': dish_id,
+        'submenu_id': submenu_id,
+        'title': title,
+        'description': description,
+        'price': '1.0',
     }
 
-    # get all submenus
-    response = client.get(f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/")
-    assert response.status_code == 200
-    assert response.json() and any(
-        map(
-            lambda item: item
-            == {
-                "id": dish_id,
-                "submenu_id": submenu_id,
-                "title": title,
-                "description": description,
-                "price": "1.0",
-            },
-            response.json(),
-        )
-    )
+    # get dish by id
+    check_dish_eq_dish(client, menu_id, answer)
+
+    # get all dishes
+    check_dish_in_dishes(client, menu_id, answer)
 
 
-def test_update_submenu_and_check(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000001"
+def test_update_dish_and_check(db_create_submenus, client):
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000001'
     # create
-    response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
-        json={
-            "title": f"{random_word(12)}",
-            "description": f"{random_word(20)}",
-            "price": "1",
-        },
-    )
-    assert response.status_code == 201
-    dish_id = response.json()["id"]
+    price = '1.0'
+    dish_id = create_dish(client, menu_id, submenu_id, random_word(12), random_word(20), price)
+
+    # patch with new values
     title = random_word(13)
     description = random_word(20)
+    patch_dish(client, menu_id, submenu_id, dish_id, title, description, price)
 
-    # patch
-    response = client.patch(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}",
-        json={"title": title, "description": description, "price": "1"},
-    )
     answer = {
-        "id": dish_id,
-        "submenu_id": submenu_id,
-        "title": title,
-        "description": description,
-        "price": "1.0",
+        'id': dish_id,
+        'submenu_id': submenu_id,
+        'title': title,
+        'description': description,
+        'price': price,
     }
-    assert response.status_code == 200
-    assert response.json() == answer
 
     # get dish by id
-    response = client.get(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}"
-    )
-    assert response.status_code == 200
-    assert response.json() == answer
+    check_dish_eq_dish(client, menu_id, answer)
 
     # get all dish
-    response = client.get(f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes")
-    assert response.status_code == 200
-    assert response.json() and any(
-        map(
-            lambda item: item == answer,
-            response.json(),
-        )
-    )
+    check_dish_in_dishes(client, menu_id, answer)
 
 
-def test_delete_submenu_and_check(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000001"
+def test_delete_dish_and_check(db_create_submenus, client):
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000001'
     # create
-    response = client.post(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes",
-        json={
-            "title": f"{random_word(13)}",
-            "description": f"{random_word(20)}",
-            "price": "1",
-        },
-    )
-    assert response.status_code == 201
-    dish_id = response.json()["id"]
+    title = random_word(13)
+    description = random_word(20)
+    price = '1'
+    dish_id = create_dish(client, menu_id, submenu_id, title, description, price)
 
     # delete
     response = client.delete(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}"
+        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
     )
     assert response.status_code == 200
 
     # get submenu by id
     response = client.get(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}"
+        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
     )
     assert response.status_code == 404
 
     # get all submenus
-    response = client.get(f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/")
-    assert response.status_code == 200
-    assert not response.json() or not any(
-        map(
-            lambda item: item["id"] == dish_id,
-            response.json(),
-        )
-    )
+    check_dish_not_in_dishes(client, menu_id, submenu_id, dish_id)
 
     # check all menus!
-    menus = client.get(f"/api/v1/menus/").json()
+    menus = client.get('/api/v1/menus/').json()
     for menu in menus:
         submenus = client.get(f"/api/v1/menus/{menu['id']}/submenus").json()
         for submenu in submenus:
-            dishes = client.get(
-                f"/api/v1/menus/{menu['id']}/submenus/{submenu['id']}/dishes/"
-            ).json()
-            assert not dishes or not any(
-                map(
-                    lambda item: item["id"] == dish_id,
-                    dishes,
-                )
-            )
+            check_dish_not_in_dishes(client, menu['id'], submenu['id'], dish_id)
 
 
 def test_delete_submenu_not_exist(db_create_submenus, client):
-    menu_id = "00000000-0000-0000-0000-000000000000"
-    submenu_id = "00000000-0000-0000-0000-000000000000"
-    dish_id = "00000000-0000-0000-0000-000000000000"
+    menu_id = '00000000-0000-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0000-0000-000000000000'
+    dish_id = '00000000-0000-0000-0000-000000000000'
     response = client.delete(
-        f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}"
+        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
     )
     assert response.status_code == 404

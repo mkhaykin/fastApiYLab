@@ -1,27 +1,31 @@
-from fastapi import APIRouter
-from fastapi import Depends
+from uuid import UUID
 
-from app.src.database import get_db
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
 from app.src import schemas
-from .common import *
+from app.src.crud import crud_menus
+from app.src.database import get_db
+
+from .common import menu_get
 
 router = APIRouter()
 
 
 # GET /app/v1/menus
-@router.get("/api/v1/menus")
+@router.get('/api/v1/menus')
 async def get_menus(db: Session = Depends(get_db)):
     return crud_menus.get_all(db)
 
 
 # GET /app/v1/menus/{{api_test_menu_id}}
-@router.get("/api/v1/menus/{menu_id}")
+@router.get('/api/v1/menus/{menu_id}')
 async def get_menu(menu_id: UUID, db: Session = Depends(get_db)):
     return menu_get(menu_id, db)
 
 
 # POST /app/v1/menus
-@router.post("/api/v1/menus", status_code=201)
+@router.post('/api/v1/menus', status_code=201)
 async def create_menu(menu: schemas.CreateMenu, db: Session = Depends(get_db)):
     try:
         db_menu = crud_menus.create(menu, db=db)
@@ -32,7 +36,7 @@ async def create_menu(menu: schemas.CreateMenu, db: Session = Depends(get_db)):
 
 
 # PATCH /app/v1/menus/{{api_test_menu_id}}
-@router.patch("/api/v1/menus/{menu_id}", status_code=200)
+@router.patch('/api/v1/menus/{menu_id}', status_code=200)
 async def update_menu(
     menu_id: UUID, menu: schemas.UpdateMenu, db: Session = Depends(get_db)
 ):
@@ -44,7 +48,7 @@ async def update_menu(
 
 
 # /app/v1/menus/{{api_test_menu_id}}
-@router.delete("/api/v1/menus/{menu_id}")
+@router.delete('/api/v1/menus/{menu_id}')
 async def delete_menu(menu_id: UUID, db: Session = Depends(get_db)):
     # check menu | submenu
     _ = menu_get(menu_id, db)

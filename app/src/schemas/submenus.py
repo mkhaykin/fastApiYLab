@@ -1,16 +1,15 @@
-from typing import Optional
-from uuid import UUID, uuid4
+from uuid import UUID
+
 from pydantic import BaseModel
-from pydantic import Field
 
 
 class BaseSubMenus(BaseModel):
     title: str
-    description: Optional[str]
+    description: str | None
 
 
 class CreateSubMenus(BaseSubMenus):
-    menu_id: Optional[UUID] = None
+    menu_id: UUID | None = None
 
 
 class UpdateSubMenus(BaseSubMenus):

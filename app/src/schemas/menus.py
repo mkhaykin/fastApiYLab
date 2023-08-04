@@ -1,12 +1,11 @@
-from typing import Optional
-from uuid import UUID, uuid4
+from uuid import UUID
+
 from pydantic import BaseModel
-from pydantic import Field
 
 
 class BaseMenu(BaseModel):
     title: str
-    description: Optional[str]
+    description: str | None
 
 
 class Menus(BaseMenu):

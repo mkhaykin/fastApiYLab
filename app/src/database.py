@@ -1,13 +1,10 @@
-from sqlalchemy.engine import create_engine
-from sqlalchemy.engine import URL
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.engine import URL, create_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.src.config import settings
 
-
 SQLALCHEMY_DATABASE_URL = URL.create(
-    drivername="postgresql",
+    drivername='postgresql',
     username=settings.POSTGRES_USER,
     password=settings.POSTGRES_PASSWORD,
     host=settings.POSTGRES_HOST,

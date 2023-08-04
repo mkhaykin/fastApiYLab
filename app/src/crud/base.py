@@ -1,16 +1,12 @@
 from uuid import UUID
-from sqlalchemy import select
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
-from pydantic import BaseModel
 
-from app.src import models
-from app.src import schemas
+from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 
 class CRUDBase:
-    def __init__(self, model, name=""):
+    def __init__(self, model, name=''):
         self.__model = model
         self.__name = name
 
@@ -41,10 +37,10 @@ class CRUDBase:
             db.commit()
         except IntegrityError:
             db.rollback()
-            raise Exception(409, f"the {self.name} is duplicated")
+            raise Exception(409, f'the {self.name} is duplicated')
         except Exception:
             db.rollback()
-            raise Exception(424, f"DB error while creating {self.name}")
+            raise Exception(424, f'DB error while creating {self.name}')
 
         db.refresh(db_obj)
         return db_obj
@@ -55,7 +51,7 @@ class CRUDBase:
         query = db.query(self.model).filter(self.model.id == obj_id)
         db_obj = query.first()
         if not db_obj:
-            raise Exception(404, f"{self.name} not found")
+            raise Exception(404, f'{self.name} not found')
 
         try:
             for column, value in obj.model_dump(exclude_unset=True).items():
@@ -63,10 +59,10 @@ class CRUDBase:
             db.commit()
         except IntegrityError:
             db.rollback()
-            raise Exception(409, f"the {self.name} is duplicated")
+            raise Exception(409, f'the {self.name} is duplicated')
         except Exception:
             db.rollback()
-            raise Exception(424, f"DB error while update {self.name}")
+            raise Exception(424, f'DB error while update {self.name}')
 
         db.refresh(db_obj)
         return db_obj
@@ -76,13 +72,13 @@ class CRUDBase:
         # db_obj = self.get(obj_id, db)
         db_obj = db.query(self.__model).filter(self.__model.id == obj_id).first()
         if not db_obj:
-            raise Exception(404, f"{self.name} not found")
+            raise Exception(404, f'{self.name} not found')
 
         try:
             db.delete(db_obj)
             db.commit()
         except Exception:
             db.rollback()
-            raise Exception(424, f"DB error while deleting {self.name}")
+            raise Exception(424, f'DB error while deleting {self.name}')
 
         return

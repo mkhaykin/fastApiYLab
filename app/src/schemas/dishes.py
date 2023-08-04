@@ -1,12 +1,11 @@
-from typing import Optional
-from uuid import UUID, uuid4
+from uuid import UUID
+
 from pydantic import BaseModel
-from pydantic import Field
 
 
 class BaseDishes(BaseModel):
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     price: str
 
 
@@ -15,7 +14,7 @@ class UpdateDishes(BaseDishes):
 
 
 class CreateDishes(BaseDishes):
-    submenu_id: Optional[UUID] = None
+    submenu_id: UUID | None = None
     pass
 
 

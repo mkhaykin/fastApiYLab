@@ -1,9 +1,8 @@
 from uuid import uuid4
 
-from sqlalchemy import Column, String
-from sqlalchemy import select, func
-from sqlalchemy.orm import column_property
+from sqlalchemy import Column, String, func, select
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import column_property
 
 from app.src.database import Base
 
@@ -11,7 +10,7 @@ from .submenus import SubMenus
 
 
 class Menus(Base):
-    __tablename__ = "menus"
+    __tablename__ = 'menus'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     title = Column(String, unique=True, nullable=False)

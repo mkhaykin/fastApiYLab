@@ -1,11 +1,8 @@
 from uuid import uuid4
 
-from sqlalchemy import Column, String
-from sqlalchemy import ForeignKey
-from sqlalchemy import UniqueConstraint
-from sqlalchemy import select, func
-from sqlalchemy.orm import column_property
+from sqlalchemy import Column, ForeignKey, String, UniqueConstraint, func, select
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import column_property
 
 from app.src.database import Base
 
@@ -13,11 +10,11 @@ from .dishes import Dishes
 
 
 class SubMenus(Base):
-    __tablename__ = "submenus"
+    __tablename__ = 'submenus'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     menu_id = Column(
-        UUID(as_uuid=True), ForeignKey("menus.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey('menus.id', ondelete='CASCADE'), nullable=False
     )
     title = Column(String, unique=True, nullable=False)
     description = Column(String, nullable=True)
@@ -29,4 +26,4 @@ class SubMenus(Base):
         .scalar_subquery()
     )
 
-    __table_args__ = (UniqueConstraint("menu_id", "title", name="uc_sub_menu"),)
+    __table_args__ = (UniqueConstraint('menu_id', 'title', name='uc_sub_menu'),)
