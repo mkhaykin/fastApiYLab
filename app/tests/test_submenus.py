@@ -163,9 +163,19 @@ def test_delete_submenu_not_exist(db_create_menus: Session, client: TestClient):
 
 
 def test_delete_submenu_menu_not_exist(db_create_menus: Session, client: TestClient):
+    # create
+    menu_id = '00000000-0000-0000-0000-000000000001'
+    submenu_id = create_submenu(client, menu_id, random_word(14), random_word(20))
+    # delete from another menu
     menu_id = '00000000-0000-0000-0000-999999999999'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
-
     response = client.delete(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}')
     assert response.status_code == 404
     assert response.json() == {'detail': 'menu not found'}
+
+
+def test_delete_submenu_menu_and_submenu_not_exist(db_create_menus: Session, client: TestClient):
+    menu_id = '00000000-0000-0000-0000-999999999999'
+    submenu_id = '00000000-0000-0000-0000-999999999999'
+    response = client.delete(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}')
+    assert response.status_code == 404
+    assert response.json() == {'detail': 'submenu not found'}

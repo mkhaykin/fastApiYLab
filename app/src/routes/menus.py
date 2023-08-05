@@ -1,60 +1,40 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends
 
 from app.src import schemas
-from app.src.crud import crud_menus
-from app.src.database import get_db
-
-from .common import menu_get
+from app.src.services import MenusService
 
 router = APIRouter()
 
 
 # GET /app/v1/menus
 @router.get('/api/v1/menus')
-async def get_menus(db: Session = Depends(get_db)):
-    return crud_menus.get_all(db)
+async def get_menus(service: MenusService = Depends()):
+    return service.get_all()
 
 
 # GET /app/v1/menus/{{api_test_menu_id}}
 @router.get('/api/v1/menus/{menu_id}')
-async def get_menu(menu_id: UUID, db: Session = Depends(get_db)):
-    return menu_get(menu_id, db)
+async def get_menu(menu_id: UUID, service: MenusService = Depends()):
+    return service.get(menu_id)
 
 
 # POST /app/v1/menus
 @router.post('/api/v1/menus', status_code=201)
-async def create_menu(menu: schemas.CreateMenu, db: Session = Depends(get_db)):
-    try:
-        db_menu = crud_menus.create(menu, db=db)
-    except Exception as e:
-        raise HTTPException(status_code=e.args[0], detail=e.args[1])
-
-    return db_menu
+async def create_menu(menu: schemas.CreateMenu, service: MenusService = Depends()):
+    return service.create(menu)
 
 
 # PATCH /app/v1/menus/{{api_test_menu_id}}
 @router.patch('/api/v1/menus/{menu_id}', status_code=200)
 async def update_menu(
-    menu_id: UUID, menu: schemas.UpdateMenu, db: Session = Depends(get_db)
+    menu_id: UUID, menu: schemas.UpdateMenu, service: MenusService = Depends()
 ):
-    try:
-        db_menu = crud_menus.update(menu_id, menu, db=db)
-    except Exception as e:
-        raise HTTPException(status_code=e.args[0], detail=e.args[1])
-    return db_menu
+    return service.update(menu_id, menu)
 
 
 # /app/v1/menus/{{api_test_menu_id}}
 @router.delete('/api/v1/menus/{menu_id}')
-async def delete_menu(menu_id: UUID, db: Session = Depends(get_db)):
-    # check menu | submenu
-    _ = menu_get(menu_id, db)
-
-    try:
-        crud_menus.delete(menu_id, db=db)
-    except Exception as e:
-        raise HTTPException(status_code=e.args[0], detail=e.args[1])
-    return
+async def delete_menu(menu_id: UUID, service: MenusService = Depends()):
+    return service.delete(menu_id)

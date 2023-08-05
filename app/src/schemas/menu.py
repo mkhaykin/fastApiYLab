@@ -8,7 +8,7 @@ class BaseMenu(BaseModel):
     description: str | None
 
 
-class Menus(BaseMenu):
+class Menu(BaseMenu):
     id: UUID
 
 

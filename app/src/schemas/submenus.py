@@ -3,18 +3,18 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-class BaseSubMenus(BaseModel):
+class BaseSubMenu(BaseModel):
     title: str
     description: str | None
 
 
-class CreateSubMenus(BaseSubMenus):
+class CreateSubMenu(BaseSubMenu):
     menu_id: UUID | None = None
 
 
-class UpdateSubMenus(BaseSubMenus):
+class UpdateSubMenu(BaseSubMenu):
     pass
 
 
-class SubMenus(CreateSubMenus):
+class SubMenu(CreateSubMenu):
     id: UUID

@@ -3,20 +3,20 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-class BaseDishes(BaseModel):
+class BaseDish(BaseModel):
     title: str
     description: str | None = None
     price: str
 
 
-class UpdateDishes(BaseDishes):
+class UpdateDish(BaseDish):
     pass
 
 
-class CreateDishes(BaseDishes):
+class CreateDish(BaseDish):
     submenu_id: UUID | None = None
     pass
 
 
-class Dishes(CreateDishes):
+class Dish(CreateDish):
     id: UUID

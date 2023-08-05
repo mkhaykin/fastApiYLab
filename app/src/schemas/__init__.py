@@ -1,5 +1,5 @@
-from .menus import Menus, UpdateMenu, CreateMenu
-from .submenus import SubMenus, UpdateSubMenus, CreateSubMenus
-from .dishes import Dishes, UpdateDishes, CreateDishes
+from .menu import Menu, UpdateMenu, CreateMenu
+from .submenus import SubMenu, UpdateSubMenu, CreateSubMenu
+from .dish import Dish, UpdateDish, CreateDish
 
 # __all__ = ["Menus", "UpdateMenu", "CreateMenu", "SubMenus", "UpdateSubMenu", "Dishes", "UpdateDish"]

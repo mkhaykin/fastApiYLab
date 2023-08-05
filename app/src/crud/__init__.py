@@ -1,5 +1,6 @@
-from .menus import crud_menus
-from .submenus import crud_submenus
-from .dishes import crud_dishes
+from .base import CRUDBase
+from .menus import CRUDMenus
+from .submenus import CRUDSubMenus
+from .dishes import CRUDDishes
 
-__all__ = ['crud_menus', 'crud_submenus', 'crud_dishes']
+__all__ = ['CRUDBase', 'CRUDMenus', 'CRUDSubMenus', 'CRUDDishes']

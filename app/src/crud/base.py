@@ -1,12 +1,17 @@
+from typing import TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.src.database import Base
+
+T = TypeVar('T', bound=Base)
+
 
 class CRUDBase:
-    def __init__(self, model, name=''):
+    def __init__(self, model: type[T], name: str = ''):
         self.__model = model
         self.__name = name
 
@@ -21,13 +26,7 @@ class CRUDBase:
     def get_all(self, db: Session):
         return db.query(self.model).all()
 
-    def get(self, obj_id: UUID, db: Session, raise_404: bool = False):
-        # TODO check exists
-        # query = db.query(self.model).filter(self.model.id == obj_id)
-        # db_obj = query.first()
-        # if not db_obj:
-        #     raise Exception(404, f"{self.name} not found")
-        # return db_obj
+    def get(self, obj_id: UUID, db: Session):
         return db.query(self.model).filter(self.model.id == obj_id).first()
 
     def create(self, obj: BaseModel, db: Session):
@@ -68,8 +67,6 @@ class CRUDBase:
         return db_obj
 
     def delete(self, obj_id: UUID, db: Session):
-        # TODO use self.get(obj_id, db)
-        # db_obj = self.get(obj_id, db)
         db_obj = db.query(self.__model).filter(self.__model.id == obj_id).first()
         if not db_obj:
             raise Exception(404, f'{self.name} not found')
