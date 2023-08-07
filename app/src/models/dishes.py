@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, Numeric, String, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Numeric, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.src.database import Base
@@ -9,7 +9,8 @@ from app.src.database import Base
 class Dishes(Base):
     __tablename__ = 'dishes'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = Column(UUID(as_uuid=True), server_default=func.gen_random_uuid(), primary_key=True, default=uuid4,
+                nullable=False, )
     submenu_id = Column(
         UUID(as_uuid=True),
         ForeignKey('submenus.id', ondelete='CASCADE'),
