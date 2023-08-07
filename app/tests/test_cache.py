@@ -45,7 +45,7 @@ async def test_cache_menu(async_db: AsyncSession, async_client: AsyncClient):
     response = await async_client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    cached_data = await cache_get(menu_id)
+    cached_data = await cache_get(menu_id, 'menu')
     assert cached_data == response.json()
 
 
@@ -63,7 +63,7 @@ async def test_cache_menu_drop_after_update(async_db: AsyncSession, async_client
     # патчим, кэш должен быть очищен
     _ = await patch_menu(async_client, menu_id, title, description)
 
-    cached_data = await cache_get(menu_id)
+    cached_data = await cache_get(menu_id, 'menu')
     assert cached_data is None
 
 
@@ -82,5 +82,5 @@ async def test_cache_menu_drop_after_delete(async_db: AsyncSession, async_client
     response = await async_client.delete(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    cached_data = await cache_get(menu_id)
+    cached_data = await cache_get(menu_id, 'menu')
     assert cached_data is None

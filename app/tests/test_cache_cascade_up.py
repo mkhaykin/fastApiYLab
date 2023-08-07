@@ -44,23 +44,23 @@ async def test_dishes_count(db_create_dishes: AsyncSession, async_client: AsyncC
     assert response.status_code == 201
     dish_id = response.json()['id']
 
-    assert (await cache_get(menu_id)) is None
-    assert (await cache_get(submenu_id)) is None
+    assert (await cache_get(menu_id, 'menu')) is None
+    assert (await cache_get(submenu_id, 'submenu')) is None
 
     # check count: submenu + 1
     response = await async_client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
-    assert (await cache_get(menu_id))
+    assert (await cache_get(menu_id, 'menu'))
 
     # delete dish
     response = await async_client.delete(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
     )
     assert response.status_code == 200
-    assert (await cache_get(menu_id)) is None
-    assert (await cache_get(submenu_id)) is None
+    assert (await cache_get(menu_id, 'menu')) is None
+    assert (await cache_get(submenu_id, 'submenu')) is None
 
     response = await async_client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    assert (await cache_get(menu_id))
+    assert (await cache_get(menu_id, 'menu'))

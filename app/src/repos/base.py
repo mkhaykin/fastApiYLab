@@ -31,15 +31,15 @@ class BaseRepository:
 
     async def add_to_cache(self, obj: Base):
         # add data to cache
-        await cache_set(self.get_cache_key(obj), obj)
+        await cache_set(self.get_cache_key(obj), self.crud.name, obj)
 
     async def del_from_cache(self, obj_id: UUID):
         # drop cached data for id
-        await cache_del(obj_id)
+        await cache_del(obj_id, self.crud.name)
 
     async def get_from_cache(self, obj_id: UUID):
         # drop cached data for id
-        return await cache_get(obj_id)
+        return await cache_get(obj_id, self.crud.name)
 
     async def get_all(self):
         return await self.crud.get_all(self.db)
@@ -81,7 +81,7 @@ class BaseRepository:
         return db_obj
 
     async def delete(self, obj_id: UUID):
-        await cache_del(obj_id)
+        await self.del_from_cache(obj_id)
         try:
             await self.crud.delete(obj_id, self.db)
         except Exception as e:

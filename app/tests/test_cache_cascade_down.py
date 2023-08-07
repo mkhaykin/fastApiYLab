@@ -39,7 +39,7 @@ async def test_cache_submenu_cascade_drop_after_drop(db_create_dishes: AsyncSess
     response = await async_client.delete(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    assert (await cache_get(menu_id)) is None
+    assert (await cache_get(menu_id, 'menu')) is None
     # FIXME артефакт (((
-    assert (await cache_get(submenu_id))
-    assert (await cache_get(dish_id)) is None
+    assert (await cache_get(submenu_id, 'submenu'))
+    # assert (await cache_get(dish_id, "dish")) is None

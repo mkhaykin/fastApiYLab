@@ -32,8 +32,8 @@ class DishesService(BaseService):
     async def create(self, menu_id: UUID, submenu_id: UUID, dish: schemas.CreateDish):
         dish.submenu_id = submenu_id   # ignore menu_id in submenu
         result = await self.repo.create_with_menu(menu_id, dish)
-        await cache_del(menu_id)
-        await cache_del(submenu_id)
+        await cache_del(menu_id, 'menu')
+        await cache_del(submenu_id, 'submenu')
         return result
 
     async def update(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID, submenu: schemas.UpdateDish):
@@ -45,6 +45,6 @@ class DishesService(BaseService):
         # check menu_id equal submenu.menu_id
         _ = await self._get_dish_with_check(menu_id, submenu_id, dish_id)
         result = await self.repo.delete(dish_id)
-        await cache_del(menu_id)
-        await cache_del(submenu_id)
+        await cache_del(menu_id, 'menu')
+        await cache_del(submenu_id, 'submenu')
         return result

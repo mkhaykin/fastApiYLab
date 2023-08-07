@@ -33,7 +33,7 @@ class SubMenusService(BaseService):
     async def create(self, menu_id: UUID, submenu: schemas.CreateSubMenu):
         submenu.menu_id = menu_id   # ignore menu_id in submenu
         result = await self.repo.create_submenu(submenu)
-        await cache_del(menu_id)
+        await cache_del(menu_id, 'menu')
         return result
 
     async def update(self, menu_id: UUID, submenu_id: UUID, submenu: schemas.UpdateSubMenu):
@@ -45,5 +45,5 @@ class SubMenusService(BaseService):
         # check menu_id equal submenu.menu_id
         _ = await self._get_submenu_with_check(menu_id, submenu_id)
         result = await self.repo.delete(submenu_id)
-        await cache_del(menu_id)
+        await cache_del(menu_id, 'menu')
         return result

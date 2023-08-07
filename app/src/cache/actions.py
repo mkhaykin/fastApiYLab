@@ -16,19 +16,19 @@ async def cache_reset():
     await client.flushall(asynchronous=True)
 
 
-async def cache_set(key: UUID | str, value: T) -> None:
+async def cache_set(key: UUID | str, name: str, value: T) -> None:
     data = jsonable_encoder(value.__dict__, custom_encoder=DISH_PRICE_ENCODER)
-    await client.set(str(key), json.dumps(data), ex=30)
+    await client.set(name + str(key), json.dumps(data), ex=30)
     return
 
 
-async def cache_get(key: UUID | str) -> dict | None:
-    data = await client.get(str(key))
+async def cache_get(key: UUID | str, name: str) -> dict | None:
+    data = await client.get(name + str(key))
     if data:
         return json.loads(data)
     return None
 
 
-async def cache_del(key: UUID | str) -> None:
-    await client.delete(str(key))
+async def cache_del(key: UUID | str, name: str) -> None:
+    await client.delete(name + str(key))
     return
