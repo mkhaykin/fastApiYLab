@@ -49,33 +49,31 @@ class BaseRepository:
         if cache_data:
             return cache_data
 
-        db_obj = await self.crud.get(obj_id, self.db)
+        db_obj: Base = await self.crud.get(obj_id, self.db)
         if not db_obj:
             raise HTTPException(status_code=404, detail=f'{self.crud.name} not found')
 
-        # await cache_set(obj_id, db_obj)
         await self.add_to_cache(db_obj)
 
         return db_obj
 
     async def create(self, obj: SCHEMA):
         try:
-            db_obj = await self.crud.create(obj, self.db)
+            db_obj: Base = await self.crud.create(obj, self.db)
         except Exception as e:
             if len(e.args) != 2:
                 raise HTTPException(status_code=500, detail=e)
             raise HTTPException(status_code=e.args[0], detail=e.args[1])
 
-        # await cache_del(db_obj.id)
+        assert 'id' in db_obj.__dict__ and db_obj.id
         await self.del_from_cache(db_obj.id)
 
         return db_obj
 
     async def update(self, obj_id: UUID, obj: SCHEMA):
-        # await cache_del(obj_id)
         await self.del_from_cache(obj_id)
         try:
-            db_obj = await self.crud.update(obj_id, obj, self.db)
+            db_obj: Base = await self.crud.update(obj_id, obj, self.db)
         except Exception as e:
             raise HTTPException(status_code=e.args[0], detail=e.args[1])
         return db_obj

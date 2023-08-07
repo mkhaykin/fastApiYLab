@@ -12,8 +12,9 @@ DISH_PRICE_ENCODER = {float: lambda x: f'{round(float(x), 2):.2f}'}
 T = TypeVar('T', bound=Base)
 
 
-async def cache_reset():
+async def cache_reset() -> None:
     await client.flushall(asynchronous=True)
+    return
 
 
 async def cache_set(key: UUID | str, name: str, value: T) -> None:

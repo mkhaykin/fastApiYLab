@@ -8,7 +8,6 @@ from app.src.services import DishesService
 
 router = APIRouter()
 
-# DISH_PRICE_ENCODER = {float: str} # TODO drop
 DISH_PRICE_ENCODER = {float: lambda x: f'{round(float(x), 2):.2f}'}
 
 
@@ -39,7 +38,8 @@ async def create_dish(
         dish: schemas.CreateDish,
         service: DishesService = Depends(),
 ):
-    return jsonable_encoder(await service.create(menu_id, submenu_id, dish), custom_encoder=DISH_PRICE_ENCODER)
+    return jsonable_encoder(await service.create(menu_id, submenu_id, dish),
+                            custom_encoder=DISH_PRICE_ENCODER)
 
 
 # PATCH /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
@@ -53,7 +53,8 @@ async def patch_dish(
         dish: schemas.UpdateDish,
         service: DishesService = Depends(),
 ):
-    return jsonable_encoder(await service.update(menu_id, submenu_id, dish_id, dish), custom_encoder=DISH_PRICE_ENCODER)
+    return jsonable_encoder(await service.update(menu_id, submenu_id, dish_id, dish),
+                            custom_encoder=DISH_PRICE_ENCODER)
 
 
 # DELETE /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
