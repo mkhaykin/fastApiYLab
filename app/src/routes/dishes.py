@@ -1,3 +1,4 @@
+import http
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -12,7 +13,9 @@ DISH_PRICE_ENCODER = {float: lambda x: f'{round(float(x), 2):.2f}'}
 
 
 # GET /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes
-@router.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes')
+@router.get(path='/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
+            summary='Get all dishes from a submenu',
+            status_code=http.HTTPStatus.OK)
 async def get_dishes(menu_id: UUID, submenu_id: UUID, service: DishesService = Depends()):
     # check menu | submenu | dish
     # TODO check submenu? 2 jsonable_encoder (((
@@ -21,7 +24,10 @@ async def get_dishes(menu_id: UUID, submenu_id: UUID, service: DishesService = D
 
 
 # GET /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
-@router.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}')
+@router.get(path='/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
+            summary='Get the dish by and id',
+            status_code=http.HTTPStatus.OK
+            )
 async def get_dish(
         menu_id: UUID, submenu_id: UUID, dish_id: UUID, service: DishesService = Depends()
 ):
@@ -31,7 +37,9 @@ async def get_dish(
 
 
 # POST /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes
-@router.post('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes', status_code=201)
+@router.post(path='/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
+             summary='Create the dish',
+             status_code=http.HTTPStatus.CREATED)
 async def create_dish(
         menu_id: UUID,
         submenu_id: UUID,
@@ -44,7 +52,9 @@ async def create_dish(
 
 # PATCH /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
 @router.patch(
-    '/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}', status_code=200
+    '/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
+    summary='Update the dish',
+    status_code=http.HTTPStatus.OK,
 )
 async def patch_dish(
         menu_id: UUID,
@@ -58,7 +68,10 @@ async def patch_dish(
 
 
 # DELETE /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
-@router.delete('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}')
+@router.delete('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
+               summary='Delete the dish',
+               status_code=http.HTTPStatus.OK,
+               )
 async def delete_dish(
         menu_id: UUID, submenu_id: UUID, dish_id: UUID, service: DishesService = Depends(),
 ):
