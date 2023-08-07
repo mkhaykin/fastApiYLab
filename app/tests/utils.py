@@ -8,4 +8,4 @@ def random_word(length: int) -> str:
 
 
 def round_price(price: str) -> str:
-    return str(round(float(price), 2))
+    return f'{round(float(price), 2):.2f}'

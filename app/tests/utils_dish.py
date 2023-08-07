@@ -1,12 +1,12 @@
-from starlette.testclient import TestClient
+from httpx import AsyncClient
 
 from .utils import round_price
 
 
-def get_dish(
-    client: TestClient, menu_id: str, submenu_id: str, dish_id: str
+async def get_dish(
+    client: AsyncClient, menu_id: str, submenu_id: str, dish_id: str
 ) -> dict:
-    response = client.get(
+    response = await client.get(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
     )
     assert response.status_code == 200
@@ -17,17 +17,17 @@ def get_dish(
     return response.json()
 
 
-def create_dish(
-    client: TestClient,
+async def create_dish(
+    client: AsyncClient,
     menu_id: str,
     submenu_id: str,
     title: str,
     description: str,
     price: str,
 ) -> str:
-    response = client.post(
+    response = await client.post(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
-        json={'title': title, 'description': description, 'price': price},
+        json={'title': title, 'description': description, 'price': round_price(price)},
     )
     assert response.status_code == 201
 
@@ -42,8 +42,8 @@ def create_dish(
     return dishes_id
 
 
-def patch_dish(
-    client: TestClient,
+async def patch_dish(
+    client: AsyncClient,
     menu_id: str,
     submenu_id: str,
     dish_id: str,
@@ -51,7 +51,7 @@ def patch_dish(
     description: str,
     price: str,
 ):
-    response = client.patch(
+    response = await client.patch(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
         json={
             'title': title,
@@ -69,13 +69,13 @@ def patch_dish(
     }
 
 
-def check_dish_eq_dish(client: TestClient, menu_id: str, dish: dict):
-    data = get_dish(client, menu_id, dish['submenu_id'], dish['id'])
+async def check_dish_eq_dish(client: AsyncClient, menu_id: str, dish: dict):
+    data = await get_dish(client, menu_id, dish['submenu_id'], dish['id'])
     assert data == dish
 
 
-def check_dish_in_dishes(client: TestClient, menu_id: str, dish: dict):
-    response = client.get(f"/api/v1/menus/{menu_id}/submenus/{dish['submenu_id']}/dishes")
+async def check_dish_in_dishes(client: AsyncClient, menu_id: str, dish: dict):
+    response = await client.get(f"/api/v1/menus/{menu_id}/submenus/{dish['submenu_id']}/dishes")
     assert response.status_code == 200
     assert response.json() and any(
         map(
@@ -85,10 +85,10 @@ def check_dish_in_dishes(client: TestClient, menu_id: str, dish: dict):
     )
 
 
-def check_dish_not_in_dishes(
-    client: TestClient, menu_id: str, submenu_id: str, dish_id: str
+async def check_dish_not_in_dishes(
+    client: AsyncClient, menu_id: str, submenu_id: str, dish_id: str
 ):
-    response = client.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes')
+    response = await client.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes')
     assert response.status_code == 200
     assert not response.json() or not any(
         map(

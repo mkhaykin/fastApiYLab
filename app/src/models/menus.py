@@ -12,7 +12,8 @@ from .submenus import SubMenus
 class Menus(Base):
     __tablename__ = 'menus'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = Column(UUID(as_uuid=True), server_default=func.gen_random_uuid(), primary_key=True, default=uuid4,
+                nullable=False, )
     title = Column(String, unique=True, nullable=False)
     description = Column(String, nullable=True)
 

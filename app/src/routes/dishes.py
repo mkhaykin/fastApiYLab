@@ -8,13 +8,17 @@ from app.src.services import DishesService
 
 router = APIRouter()
 
+# DISH_PRICE_ENCODER = {float: str} # TODO drop
+DISH_PRICE_ENCODER = {float: lambda x: f'{round(float(x), 2):.2f}'}
+
 
 # GET /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes
 @router.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes')
 async def get_dishes(menu_id: UUID, submenu_id: UUID, service: DishesService = Depends()):
     # check menu | submenu | dish
-    # TODO check submenu
-    return jsonable_encoder(service.get_by_submenu(menu_id, submenu_id), custom_encoder={float: str})
+    # TODO check submenu? 2 jsonable_encoder (((
+    res = jsonable_encoder(await service.get_by_submenu(menu_id, submenu_id))
+    return jsonable_encoder(res, custom_encoder=DISH_PRICE_ENCODER)
 
 
 # GET /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
@@ -22,7 +26,9 @@ async def get_dishes(menu_id: UUID, submenu_id: UUID, service: DishesService = D
 async def get_dish(
         menu_id: UUID, submenu_id: UUID, dish_id: UUID, service: DishesService = Depends()
 ):
-    return jsonable_encoder(service.get(menu_id, submenu_id, dish_id), custom_encoder={float: str})
+    res = jsonable_encoder(await service.get(menu_id, submenu_id, dish_id))
+    return jsonable_encoder(res,
+                            custom_encoder=DISH_PRICE_ENCODER)
 
 
 # POST /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes
@@ -33,7 +39,7 @@ async def create_dish(
         dish: schemas.CreateDish,
         service: DishesService = Depends(),
 ):
-    return jsonable_encoder(service.create(menu_id, submenu_id, dish), custom_encoder={float: str})
+    return jsonable_encoder(await service.create(menu_id, submenu_id, dish), custom_encoder=DISH_PRICE_ENCODER)
 
 
 # PATCH /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
@@ -47,7 +53,7 @@ async def patch_dish(
         dish: schemas.UpdateDish,
         service: DishesService = Depends(),
 ):
-    return jsonable_encoder(service.update(menu_id, submenu_id, dish_id, dish), custom_encoder={float: str})
+    return jsonable_encoder(await service.update(menu_id, submenu_id, dish_id, dish), custom_encoder=DISH_PRICE_ENCODER)
 
 
 # DELETE /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
@@ -55,4 +61,4 @@ async def patch_dish(
 async def delete_dish(
         menu_id: UUID, submenu_id: UUID, dish_id: UUID, service: DishesService = Depends(),
 ):
-    return service.delete(menu_id, submenu_id, dish_id)
+    return await service.delete(menu_id, submenu_id, dish_id)

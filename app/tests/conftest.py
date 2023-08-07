@@ -1,67 +1,109 @@
-from typing import Generator
+import asyncio
+from typing import AsyncGenerator
 
 import pytest
-from fastapi.testclient import TestClient
+import pytest_asyncio
+from asgi_lifespan import LifespanManager
+from httpx import AsyncClient
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from app.main import app
-from app.src.database import Base, get_db
+from app.src.database import get_db
 from app.src.models import Dishes, Menus, SubMenus
-from app.tests.database import SQLALCHEMY_DATABASE_URL, TestingSession
-from app.tests.database import engine as engine_test
-from app.tests.database import override_get_db
+from app.tests.database import (
+    SQLALCHEMY_DATABASE_TEST_URL,
+    TestingSession,
+    create_tables_async,
+    drop_tables_async,
+    engine_test_async,
+    override_get_db,
+)
 
 
-@pytest.fixture(scope='session')
-def create_test_db() -> Generator:
-    if not database_exists(SQLALCHEMY_DATABASE_URL):
-        create_database(SQLALCHEMY_DATABASE_URL)
-    yield TestingSession()
-    drop_database(SQLALCHEMY_DATABASE_URL)
-
-
-@pytest.fixture(scope='module')
-def db_test(create_test_db) -> Generator:
-    app.dependency_overrides[get_db] = override_get_db
-    Base.metadata.drop_all(bind=engine_test)
-    Base.metadata.create_all(bind=engine_test)
-    yield create_test_db
-
-
-@pytest.fixture(scope='module')
-def db_prod() -> Generator:
+@pytest_asyncio.fixture(scope='module')
+async def db_prod() -> AsyncGenerator:
     app.dependency_overrides[get_db] = get_db
     yield TestingSession()
 
 
-@pytest.fixture(scope='module')
-def client() -> Generator:
-    with TestClient(app) as c:
-        yield c
+@pytest.fixture(scope='session')
+def create_db():
+    if not database_exists(SQLALCHEMY_DATABASE_TEST_URL):
+        create_database(SQLALCHEMY_DATABASE_TEST_URL)
+    yield
+    drop_database(SQLALCHEMY_DATABASE_TEST_URL)
 
 
-@pytest.fixture(scope='module')
-def db_create_menus(db_test):
-    db_test.add(
+# drop all database every time when test complete
+@pytest_asyncio.fixture(scope='module')
+async def async_db_engine(create_db):
+    app.dependency_overrides[get_db] = override_get_db
+    await drop_tables_async()
+    await create_tables_async()
+
+    yield engine_test_async
+
+
+# truncate all table to isolate tests
+@pytest_asyncio.fixture(scope='module')
+async def async_db(async_db_engine):
+    async with TestingSession() as session:
+        yield session
+
+
+@pytest_asyncio.fixture(scope='module')
+async def async_client() -> AsyncClient:
+    async with LifespanManager(app):
+        async with AsyncClient(app=app, base_url='http://test') as client:
+            yield client
+
+
+# let test session to know it is running inside event loop
+@pytest.fixture(scope='session')
+def event_loop():
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
+
+
+# @pytest_asyncio.fixture(scope='module')
+# async def db_test() -> AsyncGenerator:
+#     app.dependency_overrides[get_db] = override_get_db
+#     await drop_tables_async()
+#     await create_tables_async()
+#     yield
+
+
+@pytest_asyncio.fixture  # (scope='module')
+async def client() -> AsyncClient:
+    async with LifespanManager(app):
+        async with AsyncClient(app=app, base_url='http://test') as client:
+            yield client
+
+
+@pytest_asyncio.fixture(scope='module')
+async def db_create_menus(async_db):
+    async_db.add(
         Menus(
             id='00000000-0000-0000-0000-000000000000',
             title='Menu 1 title',
             description='Menu 1 description',
         )
     )
-    db_test.add(
+    async_db.add(
         Menus(
             id='00000000-0000-0000-0000-000000000001',
             title='Menu 2 title',
             description='Menu 2 description',
         )
     )
-    db_test.commit()
-    yield db_test
+    await async_db.commit()
+    yield async_db
 
 
-@pytest.fixture(scope='module')
-def db_create_submenus(db_create_menus):
+@pytest_asyncio.fixture(scope='module')
+async def db_create_submenus(db_create_menus):
     db_create_menus.add(
         SubMenus(
             id='00000000-0000-0000-0000-000000000000',
@@ -86,12 +128,12 @@ def db_create_submenus(db_create_menus):
             description='SubMenu 3 description',
         )
     )
-    db_create_menus.commit()
+    await db_create_menus.commit()
     yield db_create_menus
 
 
-@pytest.fixture(scope='module')
-def db_create_dishes(db_create_submenus):
+@pytest_asyncio.fixture(scope='module')
+async def db_create_dishes(db_create_submenus):
     db_create_submenus.add(
         Dishes(
             id='00000000-0000-0000-0000-000000000000',
@@ -119,5 +161,5 @@ def db_create_dishes(db_create_submenus):
             price=10.0,
         )
     )
-    db_create_submenus.commit()
+    await db_create_submenus.commit()
     yield db_create_submenus

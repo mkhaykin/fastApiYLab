@@ -18,7 +18,7 @@ class Dishes(Base):
     title = Column(String, unique=True, nullable=False)
     description = Column(String, nullable=True)
     price = Column(
-        Numeric(precision=10, scale=2, asdecimal=False, decimal_return_scale=None)
+        Numeric(precision=10, scale=2, asdecimal=True, decimal_return_scale=None)
     )
 
     __table_args__ = (UniqueConstraint('submenu_id', 'title', name='uc_dishes'),)

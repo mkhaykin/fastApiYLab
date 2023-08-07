@@ -1,8 +1,8 @@
-from starlette.testclient import TestClient
+from httpx import AsyncClient
 
 
-def get_menu(client: TestClient, menu_id: str) -> dict:
-    response = client.get(f'/api/v1/menus/{menu_id}')
+async def get_menu(client: AsyncClient, menu_id: str) -> dict:
+    response = await client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
     assert 'id' in response.json()
     assert 'title' in response.json()
@@ -12,8 +12,8 @@ def get_menu(client: TestClient, menu_id: str) -> dict:
     return response.json()
 
 
-def create_menu(client: TestClient, title: str, description: str) -> str:
-    response = client.post(
+async def create_menu(client: AsyncClient, title: str, description: str) -> str:
+    response = await client.post(
         '/api/v1/menus',
         json={
             'title': f'{title}',
@@ -27,18 +27,17 @@ def create_menu(client: TestClient, title: str, description: str) -> str:
         'id': menu_id,
         'title': title,
         'description': description,
-        'submenus_count': 0,
-        'dishes_count': 0,
+        # 'submenus_count': 0,
+        # 'dishes_count': 0,
     }
     return menu_id
 
 
-def patch_menu(client: TestClient, menu_id: str, title: str, description: str):
-    data = get_menu(client, menu_id)
-    submenus_count = data['submenus_count']
-    dishes_count = data['dishes_count']
-
-    response = client.patch(
+async def patch_menu(client: AsyncClient, menu_id: str, title: str, description: str):
+    # data = await get_menu(client, menu_id)
+    # submenus_count = data['submenus_count']
+    # dishes_count = data['dishes_count']
+    response = await client.patch(
         f'/api/v1/menus/{menu_id}',
         json={
             'title': title,
@@ -50,18 +49,18 @@ def patch_menu(client: TestClient, menu_id: str, title: str, description: str):
         'id': menu_id,
         'title': title,
         'description': description,
-        'submenus_count': submenus_count,
-        'dishes_count': dishes_count,
+        # 'submenus_count': submenus_count,
+        # 'dishes_count': dishes_count,
     }
 
 
-def check_menu_eq_menu(client: TestClient, menu: dict):
-    data = get_menu(client, menu['id'])
+async def check_menu_eq_menu(client: AsyncClient, menu: dict):
+    data = await get_menu(client, menu['id'])
     assert data == menu
 
 
-def check_menu_in_menus(client: TestClient, menu: dict):
-    response = client.get('/api/v1/menus')
+async def check_menu_in_menus(client: AsyncClient, menu: dict):
+    response = await client.get('/api/v1/menus')
     assert response.status_code == 200
     assert response.json() and any(
         map(
@@ -71,8 +70,9 @@ def check_menu_in_menus(client: TestClient, menu: dict):
     )
 
 
-def check_menu_not_in_menus(client: TestClient, menu_id: str):
-    response = client.get('/api/v1/menus/')
+async def check_menu_not_in_menus(client: AsyncClient, menu_id: str):
+    response = await client.get('/api/v1/menus')
+
     assert response.status_code == 200
     assert not response.json() or not any(
         map(
