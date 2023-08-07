@@ -86,14 +86,14 @@ async def client() -> AsyncClient:
 async def db_create_menus(async_db):
     async_db.add(
         Menus(
-            id='00000000-0000-0000-0000-000000000000',
+            id='00000000-0001-0000-0000-000000000000',
             title='Menu 1 title',
             description='Menu 1 description',
         )
     )
     async_db.add(
         Menus(
-            id='00000000-0000-0000-0000-000000000001',
+            id='00000000-0002-0000-0000-000000000000',
             title='Menu 2 title',
             description='Menu 2 description',
         )
@@ -106,26 +106,26 @@ async def db_create_menus(async_db):
 async def db_create_submenus(db_create_menus):
     db_create_menus.add(
         SubMenus(
-            id='00000000-0000-0000-0000-000000000000',
-            menu_id='00000000-0000-0000-0000-000000000000',
+            id='00000000-0000-0001-0000-000000000000',
+            menu_id='00000000-0001-0000-0000-000000000000',
             title='SubMenu 1 title',
-            description='SubMenu 1 description',
+            description='SubMenu 11 description',
         )
     )
     db_create_menus.add(
         SubMenus(
-            id='00000000-0000-0000-0000-000000000001',
-            menu_id='00000000-0000-0000-0000-000000000000',
+            id='00000000-0000-0002-0000-000000000000',
+            menu_id='00000000-0001-0000-0000-000000000000',
             title='SubMenu 2 title',
-            description='SubMenu 2 description',
+            description='SubMenu 12 description',
         )
     )
     db_create_menus.add(
         SubMenus(
-            id='00000000-0000-0000-0000-000000000002',
-            menu_id='00000000-0000-0000-0000-000000000001',
+            id='00000000-0000-0003-0000-000000000000',
+            menu_id='00000000-0002-0000-0000-000000000000',
             title='SubMenu 3 title',
-            description='SubMenu 3 description',
+            description='SubMenu 21 description',
         )
     )
     await db_create_menus.commit()
@@ -136,8 +136,8 @@ async def db_create_submenus(db_create_menus):
 async def db_create_dishes(db_create_submenus):
     db_create_submenus.add(
         Dishes(
-            id='00000000-0000-0000-0000-000000000000',
-            submenu_id='00000000-0000-0000-0000-000000000000',
+            id='00000000-0000-0000-0001-000000000000',
+            submenu_id='00000000-0000-0001-0000-000000000000',
             title='Dish 1 title',
             description='Dish 1 description',
             price=10.0,
@@ -145,8 +145,8 @@ async def db_create_dishes(db_create_submenus):
     )
     db_create_submenus.add(
         Dishes(
-            id='00000000-0000-0000-0000-000000000001',
-            submenu_id='00000000-0000-0000-0000-000000000000',
+            id='00000000-0000-0000-0002-000000000000',
+            submenu_id='00000000-0000-0001-0000-000000000000',
             title='Dish 2 title',
             description='Dish 2 description',
             price=10.0,
@@ -154,8 +154,8 @@ async def db_create_dishes(db_create_submenus):
     )
     db_create_submenus.add(
         Dishes(
-            id='00000000-0000-0000-0000-000000000002',
-            submenu_id='00000000-0000-0000-0000-000000000001',
+            id='00000000-0000-0000-0003-000000000000',
+            submenu_id='00000000-0000-0002-0000-000000000000',
             title='Dish 3 title',
             description='Dish 3 description',
             price=10.0,

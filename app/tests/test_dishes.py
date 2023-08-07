@@ -1,10 +1,10 @@
 """
     на момент теста у нас 2 записи по меню и 3 записи submenu
-    00000000-0000-0000-0000-000000000000
-        00000000-0000-0000-0000-000000000000
-        00000000-0000-0000-0000-000000000001
-    00000000-0000-0000-0000-000000000001
-        00000000-0000-0000-0000-000000000002
+    00000000-0001-0000-0000-000000000000
+        00000000-0000-0001-0000-000000000000
+        00000000-0000-0002-0000-000000000001
+    00000000-0002-0000-0000-000000000001
+        00000000-0000-0003-0000-000000000002
 """
 import pytest
 from httpx import AsyncClient
@@ -23,9 +23,9 @@ from app.tests.utils_dish import (
 @pytest.mark.asyncio
 async def test_menu_exist(db_create_submenus: AsyncSession, client: AsyncClient):
     # проверка фикстуры
-    response = await client.get('/api/v1/menus/00000000-0000-0000-0000-000000000000')
+    response = await client.get('/api/v1/menus/00000000-0001-0000-0000-000000000000')
     assert response.status_code == 200
-    response = await client.get('/api/v1/menus/00000000-0000-0000-0000-000000000001')
+    response = await client.get('/api/v1/menus/00000000-0002-0000-0000-000000000000')
     assert response.status_code == 200
 
 
@@ -33,18 +33,18 @@ async def test_menu_exist(db_create_submenus: AsyncSession, client: AsyncClient)
 async def test_submenu_exist(db_create_submenus: AsyncSession, client: AsyncClient):
     # проверка фикстуры
     response = await client.get(
-        '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
-        'submenus/00000000-0000-0000-0000-000000000000'
+        '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
+        'submenus/00000000-0000-0001-0000-000000000000'
     )
     assert response.status_code == 200
     response = await client.get(
-        '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
-        'submenus/00000000-0000-0000-0000-000000000001'
+        '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
+        'submenus/00000000-0000-0002-0000-000000000000'
     )
     assert response.status_code == 200
     response = await client.get(
-        '/api/v1/menus/00000000-0000-0000-0000-000000000001/'
-        'submenus/00000000-0000-0000-0000-000000000002'
+        '/api/v1/menus/00000000-0002-0000-0000-000000000000/'
+        'submenus/00000000-0000-0003-0000-000000000000'
     )
     assert response.status_code == 200
 
@@ -52,8 +52,8 @@ async def test_submenu_exist(db_create_submenus: AsyncSession, client: AsyncClie
 @pytest.mark.asyncio
 async def test_dishes(db_create_submenus: AsyncSession, client: AsyncClient):
     response = await client.get(
-        '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
-        'submenus/00000000-0000-0000-0000-000000000000/dishes'
+        '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
+        'submenus/00000000-0000-0001-0000-000000000000/dishes'
     )
     assert response.status_code == 200
     # assert not response.json()
@@ -62,8 +62,8 @@ async def test_dishes(db_create_submenus: AsyncSession, client: AsyncClient):
 @pytest.mark.asyncio
 async def test_dish_not_found(db_create_submenus: AsyncSession, client: AsyncClient):
     response = await client.get(
-        '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
-        'submenus/00000000-0000-0000-0000-000000000000/'
+        '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
+        'submenus/00000000-0000-0001-0000-000000000000/'
         'dishes/00000000-0000-0000-0000-000000000000'
     )
     assert response.status_code == 404
@@ -73,9 +73,9 @@ async def test_dish_not_found(db_create_submenus: AsyncSession, client: AsyncCli
 @pytest.mark.asyncio
 async def test_dish_not_found_wrong_submenu(db_create_submenus: AsyncSession, client: AsyncClient):
     response = await client.get(
-        '/api/v1/menus/00000000-0000-0000-0000-000000000000/'
-        'submenus/00000000-0000-0000-0000-000000000002/'
-        'dishes/00000000-0000-0000-0000-000000000000'
+        '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
+        'submenus/00000002-0000-0000-0000-000000000000/'
+        'dishes/00000000-0000-0000-0001-000000000000'
     )
     assert response.status_code == 404
     assert response.json() == {'detail': 'submenu not found'}
@@ -83,8 +83,8 @@ async def test_dish_not_found_wrong_submenu(db_create_submenus: AsyncSession, cl
 
 @pytest.mark.asyncio
 async def test_create_dishes_fix(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
 
     await create_dish(
         client,
@@ -98,8 +98,8 @@ async def test_create_dishes_fix(db_create_submenus: AsyncSession, client: Async
 
 @pytest.mark.asyncio
 async def test_create_dish_duplicate(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     title = random_word(7)
     description = random_word(20)
     price = '2.0'
@@ -124,8 +124,8 @@ async def test_create_dish_duplicate(db_create_submenus: AsyncSession, client: A
 
 @pytest.mark.asyncio
 async def test_create_dish_duplicate_another_submenu(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000001'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     title = random_word(8)
     description = random_word(20)
     price = '2.0'
@@ -150,8 +150,8 @@ async def test_create_dish_duplicate_another_submenu(db_create_submenus: AsyncSe
 
 @pytest.mark.asyncio
 async def test_create_dish_duplicate_another_menu(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000001'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     title = random_word(9)
     description = random_word(20)
     price = '2.0'
@@ -164,8 +164,8 @@ async def test_create_dish_duplicate_another_menu(db_create_submenus: AsyncSessi
         price,
     )
 
-    menu_id = '00000000-0000-0000-0000-000000000001'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
+    menu_id = '00000000-0002-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     response = await client.post(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
         json={
@@ -180,8 +180,8 @@ async def test_create_dish_duplicate_another_menu(db_create_submenus: AsyncSessi
 
 @pytest.mark.asyncio
 async def test_create_dish_submenu_not_exist(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000002'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-9999-0000-000000000000'
     response = await client.post(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
         json={
@@ -196,8 +196,8 @@ async def test_create_dish_submenu_not_exist(db_create_submenus: AsyncSession, c
 
 @pytest.mark.asyncio
 async def test_create_dish_menu_not_exist(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000003'
-    submenu_id = '00000000-0000-0000-0000-000000000001'
+    menu_id = '00000000-9999-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     response = await client.post(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
         json={
@@ -212,8 +212,8 @@ async def test_create_dish_menu_not_exist(db_create_submenus: AsyncSession, clie
 
 @pytest.mark.asyncio
 async def test_create_dish(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     title = random_word(10)
     description = random_word(20)
     price = '1.0'
@@ -222,8 +222,8 @@ async def test_create_dish(db_create_submenus: AsyncSession, client: AsyncClient
 
 @pytest.mark.asyncio
 async def test_create_dish_price_int(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     title = random_word(10)
     description = random_word(20)
     price = '123'
@@ -232,8 +232,8 @@ async def test_create_dish_price_int(db_create_submenus: AsyncSession, client: A
 
 @pytest.mark.asyncio
 async def test_create_dish_price_float(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     title = random_word(5)
     description = random_word(20)
     price = '10.22'
@@ -242,8 +242,8 @@ async def test_create_dish_price_float(db_create_submenus: AsyncSession, client:
 
 @pytest.mark.asyncio
 async def test_create_dish_price_floor(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     title = random_word(6)
     description = random_word(20)
     price = '10.123'
@@ -252,8 +252,8 @@ async def test_create_dish_price_floor(db_create_submenus: AsyncSession, client:
 
 @pytest.mark.asyncio
 async def test_create_dish_price_ceil(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     title = random_word(7)
     description = random_word(20)
     price = '10.126'
@@ -262,8 +262,8 @@ async def test_create_dish_price_ceil(db_create_submenus: AsyncSession, client: 
 
 @pytest.mark.asyncio
 async def test_create_dish_and_check(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     # create
     title = random_word(11)
     description = random_word(20)
@@ -287,8 +287,8 @@ async def test_create_dish_and_check(db_create_submenus: AsyncSession, client: A
 
 @pytest.mark.asyncio
 async def test_update_dish_and_check(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000001'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     # create
     price = round_price('1')
     dish_id = await create_dish(client, menu_id, submenu_id, random_word(12), random_word(20), price)
@@ -315,8 +315,8 @@ async def test_update_dish_and_check(db_create_submenus: AsyncSession, client: A
 
 @pytest.mark.asyncio
 async def test_delete_dish_and_check(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000001'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     # create
     title = random_word(13)
     description = random_word(20)
@@ -348,8 +348,8 @@ async def test_delete_dish_and_check(db_create_submenus: AsyncSession, client: A
 
 @pytest.mark.asyncio
 async def test_delete_submenu_not_exist(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0000-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0000-0000-000000000000'
+    menu_id = '00000000-0001-0000-0000-000000000000'
+    submenu_id = '00000000-0000-0001-0000-000000000000'
     dish_id = '00000000-0000-0000-0000-000000000000'
     response = await client.delete(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'

@@ -21,7 +21,7 @@ async def test_menus(async_db: AsyncSession, async_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_menu_not_found(async_db: AsyncSession, async_client: AsyncClient):
-    response = await async_client.get('/api/v1/menus/00000000-0000-0000-0000-000000000000')
+    response = await async_client.get('/api/v1/menus/99999999-0000-0000-0000-000000000000')
     assert response.status_code == 404
     assert response.json() == {'detail': 'menu not found'}
 
