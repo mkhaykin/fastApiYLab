@@ -8,6 +8,7 @@ from httpx import AsyncClient
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from app.main import app
+from app.src.cache.actions import cache_reset
 from app.src.database import get_db
 from app.src.models import Dishes, Menus, SubMenus
 from app.tests.database import (
@@ -40,6 +41,7 @@ async def async_db_engine(create_db):
     app.dependency_overrides[get_db] = override_get_db
     await drop_tables_async()
     await create_tables_async()
+    await cache_reset()
 
     yield engine_test_async
 
@@ -163,3 +165,9 @@ async def db_create_dishes(db_create_submenus):
     )
     await db_create_submenus.commit()
     yield db_create_submenus
+
+
+@pytest_asyncio.fixture(scope='function')
+async def db_create_dishes_clear_cache(db_create_dishes):
+    await cache_reset()
+    yield db_create_dishes

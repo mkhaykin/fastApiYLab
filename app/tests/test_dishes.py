@@ -64,7 +64,7 @@ async def test_dish_not_found(db_create_submenus: AsyncSession, client: AsyncCli
     response = await client.get(
         '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
         'submenus/00000000-0000-0001-0000-000000000000/'
-        'dishes/00000000-0000-0000-0000-000000000000'
+        'dishes/00000000-0000-0000-9999-000000000000'
     )
     assert response.status_code == 404
     assert response.json() == {'detail': 'dish not found'}

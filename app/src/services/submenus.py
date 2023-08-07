@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import Depends, HTTPException
 
 from app.src import schemas
+from app.src.cache.actions import cache_del
 from app.src.repos import SubMenuRepository
 
 from .base import BaseService
@@ -31,7 +32,9 @@ class SubMenusService(BaseService):
 
     async def create(self, menu_id: UUID, submenu: schemas.CreateSubMenu):
         submenu.menu_id = menu_id   # ignore menu_id in submenu
-        return await self.repo.create_submenu(submenu)
+        result = await self.repo.create_submenu(submenu)
+        await cache_del(menu_id)
+        return result
 
     async def update(self, menu_id: UUID, submenu_id: UUID, submenu: schemas.UpdateSubMenu):
         # check menu_id equal submenu.menu_id
@@ -41,4 +44,6 @@ class SubMenusService(BaseService):
     async def delete(self, menu_id: UUID, submenu_id: UUID):
         # check menu_id equal submenu.menu_id
         _ = await self._get_submenu_with_check(menu_id, submenu_id)
-        return await self.repo.delete(submenu_id)
+        result = await self.repo.delete(submenu_id)
+        await cache_del(menu_id)
+        return result

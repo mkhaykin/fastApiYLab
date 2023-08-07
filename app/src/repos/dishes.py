@@ -46,3 +46,15 @@ class DishesRepository(BaseRepository):
             raise HTTPException(status_code=404, detail='submenu not found')
 
         return await self.create(obj)
+
+    async def create_dish(self):
+        # TODO забрать функционал с сервисного слоя (проверки)
+        pass
+
+    async def update_dish(self):
+        # TODO забрать функционал с сервисного слоя (проверки)
+        pass
+
+    async def delete_dish(self):
+        # TODO забрать функционал с сервисного слоя (проверки)
+        pass

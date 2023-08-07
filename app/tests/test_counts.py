@@ -13,11 +13,12 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.src.cache.actions import cache_get
 from app.tests.utils import random_word
 
 
 @pytest.mark.asyncio
-async def test_menu_exist(db_create_dishes: AsyncSession, client: AsyncClient):
+async def test_menu_exist(db_create_dishes_clear_cache: AsyncSession, client: AsyncClient):
     response = await client.get('/api/v1/menus')
     assert response.status_code == 200
     assert len(response.json()) == 2
@@ -30,7 +31,7 @@ async def test_menu_exist(db_create_dishes: AsyncSession, client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_submenu_exist(db_create_dishes: AsyncSession, client: AsyncClient):
+async def test_submenu_exist(db_create_dishes_clear_cache: AsyncSession, client: AsyncClient):
     response = await client.get('/api/v1/menus/00000000-0001-0000-0000-000000000000/submenus')
     assert response.status_code == 200
     assert len(response.json()) == 2
@@ -57,7 +58,7 @@ async def test_submenu_exist(db_create_dishes: AsyncSession, client: AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_dishes_exist(db_create_dishes: AsyncSession, client: AsyncClient):
+async def test_dishes_exist(db_create_dishes_clear_cache: AsyncSession, client: AsyncClient):
     response = await client.get(
         '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
         'submenus/00000000-0000-0001-0000-000000000000/'
@@ -105,7 +106,7 @@ async def test_dishes_exist(db_create_dishes: AsyncSession, client: AsyncClient)
 
 
 @pytest.mark.asyncio
-async def test_start_counts(db_create_dishes: AsyncSession, client: AsyncClient):
+async def test_start_counts(db_create_dishes_clear_cache: AsyncSession, client: AsyncClient):
     response = await client.get('/api/v1/menus/00000000-0001-0000-0000-000000000000')
     assert response.status_code == 200
     assert response.json()['submenus_count'] == 2
@@ -118,7 +119,7 @@ async def test_start_counts(db_create_dishes: AsyncSession, client: AsyncClient)
 
 
 @pytest.mark.asyncio
-async def test_submenus_count(db_create_dishes: AsyncSession, client: AsyncClient):
+async def test_submenus_count(db_create_dishes_clear_cache: AsyncSession, client: AsyncClient):
     menu_id = '00000000-0001-0000-0000-000000000000'
     response = await client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
@@ -134,6 +135,8 @@ async def test_submenus_count(db_create_dishes: AsyncSession, client: AsyncClien
     )
     assert response.status_code == 201
     submenu_id = response.json()['id']
+    assert (await cache_get(menu_id)) is None
+
     # check count: submenu + 1
     response = await client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
@@ -150,7 +153,7 @@ async def test_submenus_count(db_create_dishes: AsyncSession, client: AsyncClien
 
 
 @pytest.mark.asyncio
-async def test_dishes_count(db_create_dishes: AsyncSession, client: AsyncClient):
+async def test_dishes_count(db_create_dishes_clear_cache: AsyncSession, client: AsyncClient):
     menu_id = '00000000-0001-0000-0000-000000000000'
     submenu_id = '00000000-0000-0001-0000-000000000000'
     response = await client.get(f'/api/v1/menus/{menu_id}')

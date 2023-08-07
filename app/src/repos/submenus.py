@@ -20,14 +20,6 @@ class SubMenuRepository(BaseRepository):
     async def get_by_menu(self, menu_id: UUID):
         return await CRUDSubMenus().get_by_menu(menu_id, self.db)
 
-    # def get_by_ids_path(self, menu_id: str, submenu_id: str):
-    #     # TODO подумать (вроде не использовал)
-    #     db_submenu = self.get(submenu_id)
-    #     if db_submenu.menu_id != menu_id:
-    #         raise HTTPException(status_code=404, detail=f'submenu not found')
-    #
-    #     return db_submenu
-
     async def create_submenu(self, obj: schemas.CreateSubMenu):
         assert obj.menu_id
         if not (await MenuRepository(self.db).get(obj.menu_id)):
@@ -36,9 +28,9 @@ class SubMenuRepository(BaseRepository):
         return await self.create(obj)
 
     async def update_submenu(self):
-        # TODO
+        # TODO забрать функционал с сервисного слоя (там проверки на существование меню)
         pass
 
     async def delete_submenu(self):
-        # TODO
+        # TODO забрать функционал с сервисного слоя (там проверки на существование меню)
         pass
