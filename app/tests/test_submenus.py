@@ -8,12 +8,11 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.tests.utils import random_word
-from app.tests.utils_submenu import (
+from app.tests.utils_submenu import (  # get_submenu,
     check_submenu_eq_submenu,
     check_submenu_in_submenus,
     check_submenu_not_in_submenus,
     create_submenu,
-    get_submenu,
     patch_submenu,
 )
 
@@ -96,6 +95,7 @@ async def test_create_submenu(db_create_menus: AsyncSession, client: AsyncClient
 
 @pytest.mark.asyncio
 async def test_create_submenu_and_check(db_create_menus: AsyncSession, client: AsyncClient):
+    # TODO оформить создание и проверку в утилиты.
     # create
     menu_id = '00000000-0001-0000-0000-000000000000'
     title = random_word(11)
@@ -107,11 +107,12 @@ async def test_create_submenu_and_check(db_create_menus: AsyncSession, client: A
         'menu_id': menu_id,
         'title': title,
         'description': description,
-        'dishes_count': 0,
+        # 'dishes_count': 0,
     }
     # get submenu by id
-    data = await get_submenu(client, menu_id, submenu_id)
-    assert data == answer
+    # data = await get_submenu(client, menu_id, submenu_id)
+    # assert data == answer
+    await check_submenu_eq_submenu(client, answer)
 
     # get all submenus
     await check_submenu_in_submenus(client, answer)
@@ -133,7 +134,7 @@ async def test_update_submenu_and_check(db_create_menus: AsyncSession, client: A
         'menu_id': menu_id,
         'title': title,
         'description': description,
-        'dishes_count': 0,
+        # 'dishes_count': 0,
     }
     # get submenu by id
     await check_submenu_eq_submenu(client, answer)

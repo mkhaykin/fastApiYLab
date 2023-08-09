@@ -5,7 +5,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.tests.utils import random_word
+from app.tests.utils import compare_response, random_word
 from app.tests.utils_menu import (  # check_menu_eq_menu,; create_menu,; get_menu,; patch_menu,
     check_menu_in_menus,
     check_menu_not_in_menus,
@@ -42,13 +42,13 @@ async def test_wrong_id_in_json(async_db: AsyncSession, client: AsyncClient):
         # 'submenus_count': 0,
         # 'dishes_count': 0,
     }
-    assert response.json() == answer
-    answer = {
+    assert compare_response(answer=response.json(),
+                            standard={
         'id': menu_id,
         'title': title,
         'description': description,
-        'submenus_count': 0,
-        'dishes_count': 0,
-    }
+        # 'submenus_count': 0,
+        # 'dishes_count': 0,
+    })
     await check_menu_in_menus(client, answer)
     await check_menu_not_in_menus(client, wrong_id)

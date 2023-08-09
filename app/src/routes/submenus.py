@@ -36,7 +36,7 @@ async def create_submenu(
 
 
 # PATCH /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}
-@router.patch('/api/v1/menus/{menu_id}/submenus/{submenu_id}',
+@router.patch(path='/api/v1/menus/{menu_id}/submenus/{submenu_id}',
               summary='Update the submenu',
               status_code=http.HTTPStatus.OK)
 async def patch_submenu(

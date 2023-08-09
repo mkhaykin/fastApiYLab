@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
 
-from app.src.database import Base
+from app.src.models.base import Base
 
 from .conn import client
 

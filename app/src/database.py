@@ -2,9 +2,10 @@ from typing import AsyncGenerator
 
 from sqlalchemy.engine import URL, create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from app.src.config import settings
+from app.src.models.base import Base
 
 SQLALCHEMY_DATABASE_URL = URL.create(
     drivername='postgresql',
@@ -25,8 +26,8 @@ SQLALCHEMY_DATABASE_URL_async = URL.create(
 )
 
 
-class Base(DeclarativeBase):
-    pass
+# class Base(DeclarativeBase):
+#     pass
 
 
 # engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)

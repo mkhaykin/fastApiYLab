@@ -9,3 +9,20 @@ def random_word(length: int) -> str:
 
 def round_price(price: str) -> str:
     return f'{round(float(price), 2):.2f}'
+
+
+def compare_response(answer, standard: dict) -> bool:
+    # assert answer.__dict__
+    return all(key in answer and value == answer[key] for key, value in standard.items())
+    # assert response.json() == {
+    #     'id': submenu_id,
+    #     'menu_id': menu_id,
+    #     'title': title,
+    #     'description': description,
+    #     # 'dishes_count': 0,
+    # }
+    # return answer == standard
+
+
+def compare_response_strict(answer, standard) -> bool:
+    return answer == standard

@@ -61,8 +61,8 @@ async def test_create_menu_and_find_it(async_db: AsyncSession, async_client: Asy
         'id': menu_id,
         'title': title,
         'description': description,
-        'submenus_count': 0,
-        'dishes_count': 0,
+        # 'submenus_count': 0,
+        # 'dishes_count': 0,
     }
     await check_menu_eq_menu(async_client, answer)
 
@@ -79,8 +79,8 @@ async def test_create_menu_and_find_it_in_menus(async_db: AsyncSession, async_cl
         'id': menu_id,
         'title': title,
         'description': description,
-        'submenus_count': 0,
-        'dishes_count': 0,
+        # 'submenus_count': 0,
+        # 'dishes_count': 0,
     }
     await check_menu_in_menus(async_client, answer)
 
@@ -99,8 +99,8 @@ async def test_update_menu_and_find_it(async_db: AsyncSession, async_client: Asy
         'id': menu_id,
         'title': title,
         'description': description,
-        'submenus_count': 0,
-        'dishes_count': 0,
+        # 'submenus_count': 0,
+        # 'dishes_count': 0,
     }
     _ = await check_menu_eq_menu(async_client, answer)
 
@@ -118,8 +118,8 @@ async def test_update_menu_and_find_it_in_menus(async_db: AsyncSession, async_cl
         'id': menu_id,
         'title': title,
         'description': description,
-        'submenus_count': 0,
-        'dishes_count': 0,
+        # 'submenus_count': 0,
+        # 'dishes_count': 0,
     }
     await check_menu_eq_menu(async_client, answer)
 

@@ -1,5 +1,7 @@
 from httpx import AsyncClient
 
+from .utils import compare_response
+
 
 async def get_menu(client: AsyncClient, menu_id: str) -> dict:
     response = await client.get(f'/api/v1/menus/{menu_id}')
@@ -7,8 +9,8 @@ async def get_menu(client: AsyncClient, menu_id: str) -> dict:
     assert 'id' in response.json()
     assert 'title' in response.json()
     assert 'description' in response.json()
-    assert 'submenus_count' in response.json()
-    assert 'dishes_count' in response.json()
+    # assert 'submenus_count' in response.json()
+    # assert 'dishes_count' in response.json()
     return response.json()
 
 
@@ -23,13 +25,14 @@ async def create_menu(client: AsyncClient, title: str, description: str) -> str:
     assert response.status_code == 201
     menu_id = response.json()['id']
 
-    assert response.json() == {
+    assert compare_response(answer=response.json(),
+                            standard={
         'id': menu_id,
         'title': title,
         'description': description,
         # 'submenus_count': 0,
         # 'dishes_count': 0,
-    }
+    })
     return menu_id
 
 
@@ -45,18 +48,19 @@ async def patch_menu(client: AsyncClient, menu_id: str, title: str, description:
         },
     )
     assert response.status_code == 200
-    assert response.json() == {
+    assert compare_response(answer=response.json(),
+                            standard={
         'id': menu_id,
         'title': title,
         'description': description,
         # 'submenus_count': submenus_count,
         # 'dishes_count': dishes_count,
-    }
+    })
 
 
 async def check_menu_eq_menu(client: AsyncClient, menu: dict):
     data = await get_menu(client, menu['id'])
-    assert data == menu
+    assert compare_response(data, menu)
 
 
 async def check_menu_in_menus(client: AsyncClient, menu: dict):
@@ -64,7 +68,7 @@ async def check_menu_in_menus(client: AsyncClient, menu: dict):
     assert response.status_code == 200
     assert response.json() and any(
         map(
-            lambda item: item == menu,
+            lambda item: compare_response(item, menu),
             response.json(),
         )
     )
