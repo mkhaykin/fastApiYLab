@@ -5,10 +5,10 @@ from uuid import UUID
 from fastapi.encoders import jsonable_encoder
 
 from app.src.models.base import Base
+from app.src.schemas.dish import DISH_PRICE_ENCODER
 
 from .conn import client
 
-DISH_PRICE_ENCODER = {float: lambda x: f'{round(float(x), 2):.2f}'}
 T = TypeVar('T', bound=Base)
 
 

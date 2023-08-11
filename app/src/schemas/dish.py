@@ -3,6 +3,8 @@ from uuid import UUID
 
 from .base import BaseSchema
 
+DISH_PRICE_ENCODER = {float: lambda x: f'{round(float(x), 2):.2f}'}
+
 
 class BaseDish(BaseSchema):
     title: str
