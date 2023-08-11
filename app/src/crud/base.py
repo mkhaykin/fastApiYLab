@@ -60,18 +60,15 @@ class BaseCRUD:
 
     async def create(self, **kwargs) -> models.TBaseModel:
         db_obj: models.BaseModel = self.model(**kwargs)
-        print(kwargs)
         try:
             self._session.add(db_obj)
             await self._session.commit()
             await self._session.refresh(db_obj)
-        except IntegrityError as e:
+        except IntegrityError:
             await self._session.rollback()
-            print(e)
             raise HTTPException(409, f'the {self._name_for_error} is duplicated')
-        except DatabaseError as e:
+        except DatabaseError:
             await self._session.rollback()
-            print(e)
             raise HTTPException(424, f'DB error while creating {self._name_for_error}')
         # TODO write log if Exception
         return db_obj

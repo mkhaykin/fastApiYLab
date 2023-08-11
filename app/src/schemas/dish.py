@@ -47,6 +47,7 @@ class UpdateDishIn(BaseDish):
 
 class UpdateDishOut(UpdateDishIn):
     id: UUID
+    submenu_id: UUID
 
 
 class Dish(GetDish):

@@ -16,36 +16,27 @@ class DishesRepository(BaseRepository):
         super().__init__(session)
         self._crud = crud.DishesCRUD(session)
 
+    async def check(self, menu_id: UUID, submenu_id: UUID) -> None:
+        if not (await MenuRepository(self._session).get_by_ids(menu_id)):
+            raise HTTPException(404, 'menu not found')
+        if not (await SubMenuRepository(self._session).get_by_ids(menu_id, submenu_id)):
+            raise HTTPException(404, 'submenu not found')
+
     async def get_by_ids(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID | None = None) -> list[schemas.GetDish]:
         items = await crud.DishesCRUD(self._session).get_by_ids(menu_id, submenu_id, dish_id)
         return [schemas.GetDish(**item) for item in items]
 
     async def create_dish(self, menu_id: UUID, submenu_id: UUID, dish: schemas.CreateDishIn) -> schemas.CreateDishOut:
-        # assert obj.menu_id
-        if not (await MenuRepository(self._session).get(menu_id)):
-            raise HTTPException(404, 'menu not found')
-
-        if not (await SubMenuRepository(self._session).get(submenu_id)):
-            raise HTTPException(404, 'submenu not found')
-
+        await self.check(menu_id, submenu_id)
         return schemas.CreateDishOut(**await self._create(**{'submenu_id': submenu_id, **dish.model_dump()}))
 
     async def update_dish(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID,
                           dish: schemas.UpdateDishIn) -> schemas.UpdateDishOut:
-        if not (await MenuRepository(self._session).get(menu_id)):
-            raise HTTPException(404, 'menu not found')
-        if not (await SubMenuRepository(self._session).get(submenu_id)):
-            raise HTTPException(404, 'submenu not found')
-
+        await self.check(menu_id, submenu_id)
         return schemas.UpdateDishOut(**await self._update(dish_id, **dish.model_dump()))
 
     async def delete_dish(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID) -> None:
-        # check menu exists
-        if not (await MenuRepository(self._session).get(menu_id)):
-            raise HTTPException(404, 'menu not found')
-        if not (await SubMenuRepository(self._session).get(submenu_id)):
-            raise HTTPException(404, 'submenu not found')
-
+        await self.check(menu_id, submenu_id)
         await self._delete(dish_id)
         # await cache_del(menu_id, 'menu')  # TODO
         return

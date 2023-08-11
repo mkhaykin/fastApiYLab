@@ -9,8 +9,8 @@ async def get_menu(client: AsyncClient, menu_id: str) -> dict:
     assert 'id' in response.json()
     assert 'title' in response.json()
     assert 'description' in response.json()
-    # assert 'submenus_count' in response.json()
-    # assert 'dishes_count' in response.json()
+    assert 'submenus_count' in response.json()
+    assert 'dishes_count' in response.json()
     return response.json()
 
 
@@ -22,7 +22,6 @@ async def create_menu(client: AsyncClient, title: str, description: str) -> str:
             'description': f'{description}',
         },
     )
-    print(response)
     assert response.status_code == 201
     menu_id = response.json()['id']
 
@@ -31,16 +30,11 @@ async def create_menu(client: AsyncClient, title: str, description: str) -> str:
         'id': menu_id,
         'title': title,
         'description': description,
-        # 'submenus_count': 0,
-        # 'dishes_count': 0,
     })
     return menu_id
 
 
 async def patch_menu(client: AsyncClient, menu_id: str, title: str, description: str):
-    # data = await get_menu(client, menu_id)
-    # submenus_count = data['submenus_count']
-    # dishes_count = data['dishes_count']
     response = await client.patch(
         f'/api/v1/menus/{menu_id}',
         json={
@@ -54,8 +48,6 @@ async def patch_menu(client: AsyncClient, menu_id: str, title: str, description:
         'id': menu_id,
         'title': title,
         'description': description,
-        # 'submenus_count': submenus_count,
-        # 'dishes_count': dishes_count,
     })
 
 

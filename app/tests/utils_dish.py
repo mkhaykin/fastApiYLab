@@ -32,15 +32,13 @@ async def create_dish(
     assert response.status_code == 201
 
     dishes_id = response.json()['id']
-    # print(response.json())
-    # print(round_price(price))
     assert compare_response(answer=response.json(),
                             standard={
                                 'id': dishes_id,
                                 'submenu_id': submenu_id,
                                 'title': title,
                                 'description': description,
-                                # 'price': round_price(price),
+                                'price': round_price(price),
     })
     return dishes_id
 

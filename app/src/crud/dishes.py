@@ -20,7 +20,8 @@ class DishesCRUD(BaseCRUD):
                    models.Dishes.description,
                    models.Dishes.price, )
             .outerjoin(models.SubMenus, models.SubMenus.id == models.Dishes.submenu_id)
-            .where(models.SubMenus.id == submenu_id, models.SubMenus.menu_id == menu_id))
+            .outerjoin(models.Menus, models.Menus.id == models.SubMenus.menu_id)
+            .where(models.SubMenus.id == submenu_id, models.Menus.id == menu_id))
         if dish_id:
             query = query.where(self.model.id == dish_id)
         db_dishes = (await self._session.execute(query)).mappings().all()
