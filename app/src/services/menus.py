@@ -13,11 +13,9 @@ class MenusService(BaseService):
         self.repo = repo
 
     async def get_all(self) -> list[schemas.GetMenu]:
-        # return await self.repo.get_all()
         return await self.repo.get_by_ids()
 
     async def get(self, menu_id: UUID) -> schemas.GetMenu | None:
-        # return await self.repo.get(menu_id)
         result = await self.repo.get_by_ids(menu_id)
         if len(result) == 0:
             raise HTTPException(404, 'menu not found')

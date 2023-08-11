@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     REDIS_SERVER: str = ''
     REDIS_PORT: int = 0
+
     model_config = SettingsConfigDict(env_file='.env')
 
 

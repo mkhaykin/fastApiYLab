@@ -16,37 +16,6 @@ class DishesRepository(BaseRepository):
         super().__init__(session)
         self._crud = crud.DishesCRUD(session)
 
-    # async def get_by_submenu(self, menu_id: UUID, submenu_id: UUID) -> Sequence[models.Dishes]:
-    #     # db_submenu: models.SubMenus = (await crud.SubMenus(self._session).get_by_id(submenu_id))
-    #     # if not db_submenu or db_submenu.menu_id != menu_id:
-    #     #     return []
-    #     return await crud.DishesCRUD(self._session).get_by_ids(menu_id, submenu_id)
-    #
-    # async def get_by_ids_path(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID) -> models.Dishes:
-    #     # TODO подумать. используя crud не попадаем в кэш (
-    #     db_submenu: models.SubMenus = (await crud.SubMenusCRUD(self._session).get_by_id(submenu_id))
-    #     if not db_submenu or db_submenu.menu_id != menu_id:
-    #         raise HTTPException(status_code=404, detail='submenu not found')
-    #
-    #     db_dish: models.Dishes = (await self._crud.get_by_id(dish_id))
-    #     if not db_dish or db_dish.submenu_id != submenu_id:
-    #         raise HTTPException(status_code=404, detail='dish not found')
-    #
-    #     return db_dish
-    #
-    # async def create_with_menu(self, menu_id: UUID, obj: schemas.CreateDishIn) -> models.Dishes:
-    #     # TODO убрать menu_id куда-то (((
-    #     # check the menu exists
-    #     if not (await crud.MenusCRUD(self._session).get(menu_id)):
-    #         raise HTTPException(status_code=404, detail='menu not found')
-    #     # check the submenu exists
-    #     assert obj.submenu_id
-    #     db_submenus: models.SubMenus = (await crud.SubMenusCRUD(self._session).get_by_id(obj.submenu_id))
-    #     if not db_submenus or db_submenus.menu_id != menu_id:
-    #         raise HTTPException(status_code=404, detail='submenu not found')
-    #
-    #     return await self._create(obj)
-
     async def get_by_ids(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID | None = None) -> list[schemas.GetDish]:
         items = await crud.DishesCRUD(self._session).get_by_ids(menu_id, submenu_id, dish_id)
         return [schemas.GetDish(**item) for item in items]

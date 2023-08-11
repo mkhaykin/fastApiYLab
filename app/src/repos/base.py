@@ -41,7 +41,7 @@ class BaseRepository:
         return None
 
     async def get_all(self):
-        # TODO: перевести в pydantic model
+        # TODO: check unused !
         return (await self._crud.get_all()).mappings().all()
 
     async def get(self,
@@ -52,11 +52,6 @@ class BaseRepository:
         if cache_data:
             return schema_obj(**cache_data) if schema_obj else cache_data
 
-        # db_obj = await self._crud.get(obj_id)
-        #
-        # dict_obj = db_obj.mappings().one_or_none()
-        # if not dict_obj:
-        #     raise HTTPException(status_code=404, detail=f'{self._crud.name_for_error} not found')
         db_obj: models.BaseModel = await self._crud.get_by_id(obj_id)
         dict_obj: dict = db_obj.__dict__
         # TODO cache
@@ -65,13 +60,13 @@ class BaseRepository:
         return schema_obj(**dict_obj) if schema_obj else dict_obj
 
     async def _create(self, **kwargs) -> dict:
-        db_obj: models.BaseModel = await self._crud.create2(**kwargs)
+        db_obj: models.BaseModel = await self._crud.create(**kwargs)
         await self.del_from_cache(db_obj.id)
         return db_obj.__dict__
 
     async def _update(self, obj_id: UUID, **kwargs) -> dict:
         await self.del_from_cache(obj_id)
-        db_obj: models.BaseModel = await self._crud.update2(obj_id, **kwargs)
+        db_obj: models.BaseModel = await self._crud.update(obj_id, **kwargs)
         return db_obj.__dict__
 
     async def _delete(self, obj_id: UUID) -> None:
