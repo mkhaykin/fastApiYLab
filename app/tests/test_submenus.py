@@ -34,7 +34,7 @@ async def test_submenus(db_create_menus: AsyncSession, async_client: AsyncClient
 
 @pytest.mark.asyncio
 async def test_submenu_not_found(db_create_menus: AsyncSession, client: AsyncClient):
-    # TODO перенести в отдельный блок тестов. При перемешанном тестировании субменю может существовать ...
+    # TODO перенести в отдельный блок тестов. При перемешанном тестировании подменю может существовать ...
     response = await client.get(
         '/api/v1/menus/00000000-0001-0000-0000-000000000000/submenus/00000000-0000-0000-0000-000000000000'
     )
@@ -195,4 +195,4 @@ async def test_delete_submenu_menu_and_submenu_not_exist(db_create_menus: AsyncS
     submenu_id = '00000000-0000-0001-0000-999999999999'
     response = await client.delete(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}')
     assert response.status_code == 404
-    assert response.json() == {'detail': 'submenu not found'}
+    assert response.json() == {'detail': 'menu not found'}
