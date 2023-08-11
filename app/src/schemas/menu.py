@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from pydantic import BaseModel
+from .base import BaseSchema
 
 
-class BaseMenu(BaseModel):
+class BaseMenu(BaseSchema):
     title: str
     description: str | None
     model_config = {
@@ -18,8 +18,30 @@ class BaseMenu(BaseModel):
     }
 
 
-class Menu(BaseMenu):
+class GetMenu(BaseMenu):
     id: UUID
+    submenus_count: int
+    dishes_count: int
+    pass
+
+
+class CreateMenuIn(BaseMenu):
+    pass
+
+
+class CreateMenuOut(CreateMenuIn):
+    id: UUID
+
+
+class UpdateMenuIn(BaseMenu):
+    pass
+
+
+class UpdateMenuOut(UpdateMenuIn):
+    id: UUID
+
+
+class Menu(GetMenu):
     # model_config = {
     #     'json_schema_extra': {
     #         'examples': [
@@ -33,11 +55,4 @@ class Menu(BaseMenu):
     #         ]
     #     }
     # }
-
-
-class CreateMenu(BaseMenu):
-    pass
-
-
-class UpdateMenu(BaseMenu):
     pass

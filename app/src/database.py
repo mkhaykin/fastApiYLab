@@ -38,11 +38,13 @@ SQLALCHEMY_DATABASE_URL_async = URL.create(
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
+    # echo=True,
     # echo=settings.db_echo_log,
 )
 
 engine_async = create_async_engine(
     SQLALCHEMY_DATABASE_URL_async,
+    # echo=True,
     # echo=settings.db_echo_log,
     future=True,
 )

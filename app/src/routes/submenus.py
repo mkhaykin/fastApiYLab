@@ -14,7 +14,7 @@ router = APIRouter()
             summary='Get all submenus from a menu',
             status_code=http.HTTPStatus.OK)
 async def get_submenus(menu_id: UUID, service: SubMenusService = Depends()):
-    return await service.get_by_menu(menu_id)
+    return await service.get_all(menu_id)
 
 
 # GET /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}
@@ -30,7 +30,7 @@ async def get_submenu(menu_id: UUID, submenu_id: UUID, service: SubMenusService 
              summary='Create the submenu',
              status_code=http.HTTPStatus.CREATED)
 async def create_submenu(
-        menu_id: UUID, submenu: schemas.CreateSubMenu, service: SubMenusService = Depends()
+        menu_id: UUID, submenu: schemas.CreateSubMenuIn, service: SubMenusService = Depends()
 ):
     return await service.create(menu_id, submenu)
 
@@ -42,7 +42,7 @@ async def create_submenu(
 async def patch_submenu(
         menu_id: UUID,
         submenu_id: UUID,
-        submenu: schemas.UpdateSubMenu,
+        submenu: schemas.UpdateSubMenuIn,
         service: SubMenusService = Depends(),
 ):
     return await service.update(menu_id, submenu_id, submenu)

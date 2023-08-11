@@ -1,3 +1,5 @@
+from typing import TypeVar
+
 from sqlalchemy import event
 from sqlalchemy.orm import DeclarativeBase, configure_mappers, declared_attr
 
@@ -19,6 +21,9 @@ class BaseModel(Base, MixinID, MixinTitle, MixinTimeStamp):
     @classmethod
     def __declare_last__(cls):
         super().__declare_last__()
+
+
+TBaseModel = TypeVar('TBaseModel', bound=BaseModel)
 
 
 @event.listens_for(Base.metadata, 'before_create')

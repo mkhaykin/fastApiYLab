@@ -1,25 +1,27 @@
-from typing import Sequence, TypeVar
+from typing import Sequence
 from uuid import UUID
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import RowMapping, select
 
 from app.src import models
 
-from .base import CRUDBase
-
-T = TypeVar('T', bound=models.Dishes)
+from .base import BaseCRUD
 
 
-class CRUDDishes(CRUDBase):
-    def __init__(self):
-        super().__init__(models.Dishes, 'dish')
+class DishesCRUD(BaseCRUD):
+    _model: type[models.Dishes] = models.Dishes
+    _name_for_error = 'dish'
 
-    async def get_by_submenu(self, submenu_id: UUID, db: AsyncSession) -> Sequence[T]:
-        # TODO
-        query = select(self.model).where(self.model.submenu_id == submenu_id)
-        db_dishes = (await db.execute(query)).scalars().all()
+    async def get_by_ids(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID | None = None) -> Sequence[RowMapping]:
+        query = (
+            select(models.Dishes.id,
+                   models.Dishes.submenu_id,
+                   models.Dishes.title,
+                   models.Dishes.description,
+                   models.Dishes.price, )
+            .outerjoin(models.SubMenus, models.SubMenus.id == models.Dishes.submenu_id)
+            .where(models.SubMenus.id == submenu_id, models.SubMenus.menu_id == menu_id))
+        if dish_id:
+            query = query.where(self.model.id == dish_id)
+        db_dishes = (await self._session.execute(query)).mappings().all()
         return db_dishes
-
-
-crud_dishes = CRUDDishes()

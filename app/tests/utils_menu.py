@@ -22,6 +22,7 @@ async def create_menu(client: AsyncClient, title: str, description: str) -> str:
             'description': f'{description}',
         },
     )
+    print(response)
     assert response.status_code == 201
     menu_id = response.json()['id']
 

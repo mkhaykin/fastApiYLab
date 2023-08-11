@@ -29,7 +29,7 @@ async def get_menu(menu_id: UUID, service: MenusService = Depends()):
 @router.post(path='/api/v1/menus',
              summary='Create the menu',
              status_code=http.HTTPStatus.CREATED)
-async def create_menu(menu: schemas.CreateMenu, service: MenusService = Depends()):
+async def create_menu(menu: schemas.CreateMenuIn, service: MenusService = Depends()):
     return await service.create(menu)
 
 
@@ -38,7 +38,7 @@ async def create_menu(menu: schemas.CreateMenu, service: MenusService = Depends(
               summary='Update the menu',
               status_code=http.HTTPStatus.OK)
 async def update_menu(
-        menu_id: UUID, menu: schemas.UpdateMenu, service: MenusService = Depends()
+        menu_id: UUID, menu: schemas.UpdateMenuIn, service: MenusService = Depends()
 ):
     return await service.update(menu_id, menu)
 

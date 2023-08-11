@@ -19,7 +19,7 @@ DISH_PRICE_ENCODER = {float: lambda x: f'{round(float(x), 2):.2f}'}
 async def get_dishes(menu_id: UUID, submenu_id: UUID, service: DishesService = Depends()):
     # check menu | submenu | dish
     # TODO check submenu? 2 jsonable_encoder (((
-    res = jsonable_encoder(await service.get_by_submenu(menu_id, submenu_id))
+    res = jsonable_encoder(await service.get_all(menu_id, submenu_id))
     return jsonable_encoder(res, custom_encoder=DISH_PRICE_ENCODER)
 
 
@@ -43,7 +43,7 @@ async def get_dish(
 async def create_dish(
         menu_id: UUID,
         submenu_id: UUID,
-        dish: schemas.CreateDish,
+        dish: schemas.CreateDishIn,
         service: DishesService = Depends(),
 ):
     return jsonable_encoder(await service.create(menu_id, submenu_id, dish),
@@ -60,7 +60,7 @@ async def patch_dish(
         menu_id: UUID,
         submenu_id: UUID,
         dish_id: UUID,
-        dish: schemas.UpdateDish,
+        dish: schemas.UpdateDishIn,
         service: DishesService = Depends(),
 ):
     return jsonable_encoder(await service.update(menu_id, submenu_id, dish_id, dish),

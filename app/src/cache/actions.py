@@ -24,7 +24,8 @@ async def cache_set(key: UUID | str, name: str, value: T) -> None:
 
 
 async def cache_get(key: UUID | str, name: str) -> dict | None:
-    data = await client.get(name + str(key))
+    # data = await client.get(name + str(key))
+    data = None
     if data:
         return json.loads(data)
     return None

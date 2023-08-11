@@ -1,9 +1,8 @@
-from typing import Sequence
 from uuid import UUID
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 
-from app.src import models, schemas
+from app.src import schemas
 from app.src.repos import MenuRepository
 
 from .base import BaseService
@@ -13,17 +12,22 @@ class MenusService(BaseService):
     def __init__(self, repo: MenuRepository = Depends()):
         self.repo = repo
 
-    async def get_all(self) -> Sequence[models.Menus | dict]:
-        return await self.repo.get_all()
+    async def get_all(self) -> list[schemas.GetMenu]:
+        # return await self.repo.get_all()
+        return await self.repo.get_by_ids()
 
-    async def get(self, menu_id: UUID) -> models.Menus | dict:
-        return await self.repo.get(menu_id)
+    async def get(self, menu_id: UUID) -> schemas.GetMenu | None:
+        # return await self.repo.get(menu_id)
+        result = await self.repo.get_by_ids(menu_id)
+        if len(result) == 0:
+            raise HTTPException(404, 'menu not found')
+        return result[0]    # TODO check if more one
 
-    async def create(self, menu: schemas.CreateMenu) -> models.Menus:
-        return await self.repo.create(menu)
+    async def create(self, menu: schemas.CreateMenuIn) -> schemas.CreateMenuOut:
+        return await self.repo.create_menu(menu)
 
-    async def update(self, menu_id: UUID, menu: schemas.UpdateMenu) -> models.Menus:
-        return await self.repo.update(menu_id, menu)
+    async def update(self, menu_id: UUID, menu: schemas.UpdateMenuIn) -> schemas.UpdateMenuIn:
+        return await self.repo.update_menu(menu_id, menu)
 
     async def delete(self, menu_id: UUID) -> None:
-        return await self.repo.delete(menu_id)
+        return await self.repo.delete_menu(menu_id)

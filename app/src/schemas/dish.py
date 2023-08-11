@@ -1,12 +1,13 @@
+from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel
+from .base import BaseSchema
 
 
-class BaseDish(BaseModel):
+class BaseDish(BaseSchema):
     title: str
     description: str | None = None
-    price: str
+    price: str | Decimal
     model_config = {
         'json_schema_extra': {
             'examples': [
@@ -20,17 +21,33 @@ class BaseDish(BaseModel):
     }
 
 
-class UpdateDish(BaseDish):
-    pass
-
-
-class CreateDish(BaseDish):
-    submenu_id: UUID | None = None
-    pass
-
-
-class Dish(CreateDish):
+class GetDish(BaseDish):
     id: UUID
+    submenu_id: UUID
+    pass
+
+
+class CreateDishIn(BaseDish):
+    price: str | Decimal
+    pass
+
+
+class CreateDishOut(CreateDishIn):
+    id: UUID
+    submenu_id: UUID
+    price: str | Decimal
+    pass
+
+
+class UpdateDishIn(BaseDish):
+    pass
+
+
+class UpdateDishOut(UpdateDishIn):
+    id: UUID
+
+
+class Dish(GetDish):
     model_config = {
         'json_schema_extra': {
             'examples': [

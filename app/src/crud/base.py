@@ -1,85 +1,138 @@
-from typing import Sequence, TypeVar
+from typing import Any, TypeVar
 from uuid import UUID
 
-from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException
+from sqlalchemy import Result, Select, select
+from sqlalchemy.exc import DatabaseError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src.models.base import Base
-
-T = TypeVar('T', bound=Base)
+from app.src import models
 
 
-class CRUDBase:
-    def __init__(self, model: type[T], name: str = ''):
-        self.__model = model
-        self.__name = name
+class BaseCRUD:
+    _model: type[models.BaseModel] = models.BaseModel
+    _base_select: Select | None = None
+    _name_for_error: str = ''
+    _session: AsyncSession
 
-    @property
-    def model(self) -> type[T]:
-        return self.__model
+    def __init__(self, session: AsyncSession):
+        self._session = session
 
     @property
-    def name(self) -> str:
-        return self.__name
+    def model(self) -> type[models.TBaseModel]:
+        return self._model
 
-    async def get_all(self, db: AsyncSession) -> Sequence[T]:
-        query = select(self.model)
-        result = (await db.execute(query))
-        return result.scalars().all()
+    @property
+    def base_select(self) -> Select:
+        return self._base_select if self._base_select is not None else select(self.model)
 
-    async def get(self, obj_id: UUID, db: AsyncSession) -> T:
-        query = select(self.model).where(self.model.id == obj_id)
-        result = await db.execute(query)
-        return result.scalars().first()
+    @property
+    def name_for_error(self) -> str:
+        return self._name_for_error if self._name_for_error else str(self._model.__tablename__)
 
-    async def get_id(self, obj_id: UUID, db: AsyncSession) -> T:
-        query = select(self.model).where(self.model.id == obj_id)
-        db_obj: Base = (await db.execute(query)).scalars().first()
+    async def get_all(self) -> Result[Any]:
+        """
+        Базовая заготовка для получения всех данных
+        :return: результат select
+        """
+        return await self._session.execute(self.base_select)
+
+    async def get(self, obj_id: UUID) -> Result[Any]:
+        """
+        Базовая заготовка для получения данных по выбранному объекту
+        :param obj_id: код объекта
+        :return: результат select
+        """
+        return await self._session.execute(self.base_select.where(self.model.id == obj_id))
+
+    async def get_by_id(self, obj_id: UUID) -> models.TBaseModel:
+        """
+        Возврат
+        :param obj_id:
+        :return: модель объекта или HTTPException, если не найден
+        """
+        db_obj: models.BaseModel = (await self._session.get(self.model, obj_id))
         if not db_obj:
-            raise Exception(404, f'{self.name} not found')
+            raise HTTPException(404, f'{self._name_for_error} not found')
         return db_obj
 
-    async def create(self, obj: BaseModel, db: AsyncSession) -> T:
-        db_obj = self.model(**obj.model_dump())
+    # async def create(self, obj: schemas.BaseSchema) -> models.TBaseModel:
+    #     db_obj: models.BaseModel = self.model(**obj.model_dump())
+    #     try:
+    #         self._session.add(db_obj)
+    #         await self._session.commit()
+    #         await self._session.refresh(db_obj)
+    #     except IntegrityError:
+    #         await self._session.rollback()
+    #         raise Exception(409, f'the {self._name_for_error} is duplicated')
+    #     except Exception:
+    #         await self._session.rollback()
+    #         raise Exception(424, f'DB error while creating {self._name_for_error}')
+    #     return db_obj
+
+    async def create2(self, **kwargs) -> models.TBaseModel:
+        db_obj: models.BaseModel = self.model(**kwargs)
+        print(kwargs)
         try:
-            db.add(db_obj)
-            await db.commit()
-        except IntegrityError:
-            await db.rollback()
-            raise Exception(409, f'the {self.name} is duplicated')
-        except Exception:
-            await db.rollback()
-            raise Exception(424, f'DB error while creating {self.name}')
-        # await db.refresh(db_obj)
+            self._session.add(db_obj)
+            await self._session.commit()
+            await self._session.refresh(db_obj)
+        except IntegrityError as e:
+            await self._session.rollback()
+            print(e)
+            raise HTTPException(409, f'the {self._name_for_error} is duplicated')
+        except DatabaseError as e:
+            await self._session.rollback()
+            print(e)
+            raise HTTPException(424, f'DB error while creating {self._name_for_error}')
+        # TODO write log if Exception
         return db_obj
 
-    async def update(self, obj_id: UUID, obj: BaseModel, db: AsyncSession) -> T:
-        db_obj: Base = await self.get_id(obj_id, db)
+    # async def update(self, obj_id: UUID, obj: schemas.BaseSchema) -> models.TBaseModel:
+    #     db_obj: models.BaseModel = (await self.get_by_id(obj_id))
+    #     try:
+    #         for column, value in obj.model_dump(exclude_unset=True).items():
+    #             setattr(db_obj, column, value)
+    #         await self._session.commit()
+    #         await self._session.refresh(db_obj)
+    #     except IntegrityError:
+    #         await self._session.rollback()
+    #         raise Exception(409, f'the {self._name_for_error} is duplicated')
+    #     except Exception:
+    #         await self._session.rollback()
+    #         raise Exception(424, f'DB error while update {self._name_for_error}')
+    #
+    #     return db_obj
 
+    async def update2(self, obj_id: UUID, **kwargs) -> models.TBaseModel:
+        db_obj: models.BaseModel = (await self.get_by_id(obj_id))
         try:
-            for column, value in obj.model_dump(exclude_unset=True).items():
+            for column, value in kwargs.items():
                 setattr(db_obj, column, value)
-            await db.commit()
+            await self._session.commit()
+            await self._session.refresh(db_obj)
         except IntegrityError:
-            await db.rollback()
-            raise Exception(409, f'the {self.name} is duplicated')
-        except Exception:
-            await db.rollback()
-            raise Exception(424, f'DB error while update {self.name}')
+            await self._session.rollback()
+            raise HTTPException(409, f'the {self._name_for_error} is duplicated')
+        except DatabaseError:
+            await self._session.rollback()
+            raise HTTPException(424, f'DB error while update {self._name_for_error}')
+        # TODO write log if Exception
 
-        # await db.refresh(db_obj)
         return db_obj
 
-    async def delete(self, obj_id: UUID, db: AsyncSession) -> None:
-        db_obj: Base = await self.get_id(obj_id, db)
+    async def delete(self, obj_id: UUID) -> None:
+        db_obj: models.BaseModel = await self.get_by_id(obj_id)
 
         try:
-            await db.delete(db_obj)
-            await db.commit()
-        except Exception:
-            await db.rollback()
-            raise Exception(424, f'DB error while deleting {self.name}')
+            await self._session.delete(db_obj)
+            await self._session.commit()
+        except DatabaseError:
+            await self._session.rollback()
+            raise HTTPException(424, f'DB error while deleting {self._name_for_error}')
+        # TODO write log if Exception
 
         return
+
+
+TBaseCRUD = TypeVar('TBaseCRUD', bound=BaseCRUD)

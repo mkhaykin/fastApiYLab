@@ -1,24 +1,36 @@
-from typing import Sequence, TypeVar
+from typing import Sequence
 from uuid import UUID
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import RowMapping, distinct, func, select
 
 from app.src import models
 
-from .base import CRUDBase
-
-T = TypeVar('T', bound=models.SubMenus)
+from .base import BaseCRUD
 
 
-class CRUDSubMenus(CRUDBase):
-    def __init__(self):
-        super().__init__(models.SubMenus, 'submenu')
+class SubMenusCRUD(BaseCRUD):
+    _model = models.SubMenus
+    _name_for_error = 'submenu'
 
-    async def get_by_menu(self, menu_id: UUID, db: AsyncSession) -> Sequence[T]:
-        query = select(self.model).where(self.model.menu_id == menu_id)
-        db_submenus = (await db.execute(query)).scalars().all()
-        return db_submenus
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._base_select = (
+            select(
+                models.SubMenus.id,
+                models.SubMenus.menu_id,
+                models.SubMenus.title,
+                models.SubMenus.description,
+                func.count(distinct(models.Dishes.id)).label('dishes_count'),
+            )
+            .outerjoin(models.Dishes, models.SubMenus.id == models.Dishes.submenu_id)
+            .group_by(models.SubMenus.id)
+        )
 
-
-crud_submenus = CRUDSubMenus()
+    async def get_by_ids(self, menu_id: UUID, submenu_id: UUID | None = None) -> Sequence[RowMapping]:
+        query = (
+            self.base_select
+            .where(self.model.menu_id == menu_id))
+        if submenu_id:
+            query = query.where(self.model.id == submenu_id)
+        db_submenus = (await self._session.execute(query))
+        return db_submenus.mappings().all()

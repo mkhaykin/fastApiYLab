@@ -1,23 +1,19 @@
-from typing import TypeVar
 from uuid import UUID
 
-from fastapi import HTTPException
-from pydantic import BaseModel
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src.cache.actions import cache_del, cache_get, cache_set
-from app.src.crud import CRUDBase
-from app.src.models.base import Base
-
-T = TypeVar('T', bound=Base)
-CRUD = TypeVar('CRUD', bound=CRUDBase)
-SCHEMA = TypeVar('SCHEMA', bound=BaseModel)
+from app.src import crud, models, schemas
+from app.src.database import get_db
 
 
 class BaseRepository:
-    def __init__(self, crud: CRUD, db: AsyncSession):
-        self.crud = crud
-        self.db = db
+    _crud: crud.BaseCRUD
+    _session: AsyncSession
+
+    def __init__(self, session: AsyncSession = Depends(get_db)):
+        self._crud = crud.BaseCRUD(session)  # (session)
+        self._session = session  # TODO ? need ?
 
     async def reset_cache(self):
         # drop all cached data for all CRUD object
@@ -25,63 +21,59 @@ class BaseRepository:
         for obj in objs:
             await self.del_from_cache(obj)
 
-    def get_cache_key(self, obj: Base) -> str:
+    def get_cache_key(self, obj: models.BaseModel) -> str:
         key: str = str(obj.__dict__['id'])
         return key
 
-    async def add_to_cache(self, obj: Base):
+    async def add_to_cache(self, obj: models.BaseModel) -> None:
         # add data to cache
-        await cache_set(self.get_cache_key(obj), self.crud.name, obj)
+        # await cache_set(self.get_cache_key(obj), self.crud.name, obj)
+        return None
 
-    async def del_from_cache(self, obj_id: UUID):
+    async def del_from_cache(self, obj_id: UUID) -> None:
         # drop cached data for id
-        await cache_del(obj_id, self.crud.name)
+        # await cache_del(obj_id, self.crud.name)
+        return None
 
-    async def get_from_cache(self, obj_id: UUID):
+    async def get_from_cache(self, obj_id: UUID) -> dict | None:
         # drop cached data for id
-        return await cache_get(obj_id, self.crud.name)
+        # return await cache_get(obj_id, self.crud.name)
+        return None
 
     async def get_all(self):
-        return await self.crud.get_all(self.db)
+        # TODO: перевести в pydantic model
+        return (await self._crud.get_all()).mappings().all()
 
-    async def get(self, obj_id: UUID):
+    async def get(self,
+                  obj_id: UUID,
+                  schema_obj: type[schemas.TBaseSchema] | None = None) \
+            -> schemas.TBaseSchema | dict:
         cache_data = await self.get_from_cache(obj_id)
         if cache_data:
-            return cache_data
+            return schema_obj(**cache_data) if schema_obj else cache_data
 
-        db_obj: Base = await self.crud.get(obj_id, self.db)
-        if not db_obj:
-            raise HTTPException(status_code=404, detail=f'{self.crud.name} not found')
+        # db_obj = await self._crud.get(obj_id)
+        #
+        # dict_obj = db_obj.mappings().one_or_none()
+        # if not dict_obj:
+        #     raise HTTPException(status_code=404, detail=f'{self._crud.name_for_error} not found')
+        db_obj: models.BaseModel = await self._crud.get_by_id(obj_id)
+        dict_obj: dict = db_obj.__dict__
+        # TODO cache
+        # await self.add_to_cache(dict_obj)
 
-        await self.add_to_cache(db_obj)
+        return schema_obj(**dict_obj) if schema_obj else dict_obj
 
-        return db_obj
-
-    async def create(self, obj: SCHEMA):
-        try:
-            db_obj: Base = await self.crud.create(obj, self.db)
-        except Exception as e:
-            if len(e.args) != 2:
-                raise HTTPException(status_code=500, detail=e)
-            raise HTTPException(status_code=e.args[0], detail=e.args[1])
-
-        assert 'id' in db_obj.__dict__ and db_obj.id
+    async def _create(self, **kwargs) -> dict:
+        db_obj: models.BaseModel = await self._crud.create2(**kwargs)
         await self.del_from_cache(db_obj.id)
+        return db_obj.__dict__
 
-        return db_obj
-
-    async def update(self, obj_id: UUID, obj: SCHEMA):
+    async def _update(self, obj_id: UUID, **kwargs) -> dict:
         await self.del_from_cache(obj_id)
-        try:
-            db_obj: Base = await self.crud.update(obj_id, obj, self.db)
-        except Exception as e:
-            raise HTTPException(status_code=e.args[0], detail=e.args[1])
-        return db_obj
+        db_obj: models.BaseModel = await self._crud.update2(obj_id, **kwargs)
+        return db_obj.__dict__
 
-    async def delete(self, obj_id: UUID):
+    async def _delete(self, obj_id: UUID) -> None:
         await self.del_from_cache(obj_id)
-        try:
-            await self.crud.delete(obj_id, self.db)
-        except Exception as e:
-            raise HTTPException(status_code=e.args[0], detail=e.args[1])
-        return
+        return await self._crud.delete(obj_id)
