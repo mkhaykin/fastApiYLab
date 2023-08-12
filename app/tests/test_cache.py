@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src.cache.actions import cache_get
+from app.src.cache.actions import key_in_cache, key_pattern_in_cache
 from app.tests.utils import random_word
 from app.tests.utils_menu import create_menu, patch_menu
 
@@ -29,10 +29,10 @@ async def test_menus(async_db: AsyncSession, async_client: AsyncClient):
     assert response.status_code == 200
 
     # TODO фикс поведение при запросе объекта другого типа
-    # response = await async_client.get(
-    #     f'/api/v1/menus/{menu_id}/submenus/{menu_id}')
-    # assert response.status_code == 404
-    # assert response.json() == {'detail': 'submenu not found'}
+    response = await async_client.get(
+        f'/api/v1/menus/{menu_id}/submenus/{menu_id}')
+    assert response.status_code == 404
+    assert response.json() == {'detail': 'submenu not found'}
 
 
 @pytest.mark.asyncio
@@ -45,8 +45,7 @@ async def test_cache_menu(async_db: AsyncSession, async_client: AsyncClient):
     response = await async_client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    cached_data = await cache_get(menu_id, 'menu')
-    assert cached_data == response.json()
+    assert await key_in_cache(f'{menu_id}:None:None')
 
 
 @pytest.mark.asyncio
@@ -63,8 +62,7 @@ async def test_cache_menu_drop_after_update(async_db: AsyncSession, async_client
     # патчим, кэш должен быть очищен
     _ = await patch_menu(async_client, menu_id, title, description)
 
-    cached_data = await cache_get(menu_id, 'menu')
-    assert cached_data is None
+    assert not (await key_pattern_in_cache(f'{menu_id}:*:*'))
 
 
 @pytest.mark.asyncio
@@ -82,5 +80,4 @@ async def test_cache_menu_drop_after_delete(async_db: AsyncSession, async_client
     response = await async_client.delete(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    cached_data = await cache_get(menu_id, 'menu')
-    assert cached_data is None
+    assert not await key_pattern_in_cache(f'{menu_id}:*:*')

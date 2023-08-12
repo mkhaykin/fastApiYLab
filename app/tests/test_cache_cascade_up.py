@@ -14,7 +14,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src.cache.actions import cache_get
+from app.src.cache.actions import key_pattern_in_cache
 from app.tests.utils import random_word
 
 
@@ -25,14 +25,14 @@ async def test_dishes_count(db_create_dishes: AsyncSession, async_client: AsyncC
     response = await async_client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    # кладем в кэш меню
+    # Кладем в кэш меню
     response = await async_client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
     # кладем в кэш подменю
     response = await async_client.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}')
     assert response.status_code == 200
 
-    # создаем блюдо
+    # Создаем блюдо
     response = await async_client.post(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
         json={
@@ -44,23 +44,25 @@ async def test_dishes_count(db_create_dishes: AsyncSession, async_client: AsyncC
     assert response.status_code == 201
     dish_id = response.json()['id']
 
-    assert (await cache_get(menu_id, 'menu')) is None
-    assert (await cache_get(submenu_id, 'submenu')) is None
+    # Кэша нет, т.к. создание блюда должно сбросить кеш и меню и подменю
+    assert not (await key_pattern_in_cache(f'{menu_id}:*:*'))
+    assert not (await key_pattern_in_cache(f'*:{submenu_id}:*'))
 
-    # check count: submenu + 1
+    # Кладем в кеш меню
     response = await async_client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
-    assert (await cache_get(menu_id, 'menu'))
+    # Проверяем что есть
+    assert (await key_pattern_in_cache(f'{menu_id}:*:*'))
 
     # delete dish
     response = await async_client.delete(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
     )
     assert response.status_code == 200
-    assert (await cache_get(menu_id, 'menu')) is None
-    assert (await cache_get(submenu_id, 'submenu')) is None
+    assert not (await key_pattern_in_cache(f'{menu_id}:*:*'))
+    assert not (await key_pattern_in_cache(f'*:{submenu_id}:*'))
 
     response = await async_client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    assert (await cache_get(menu_id, 'menu'))
+    assert (await key_pattern_in_cache(f'{menu_id}:None:None'))

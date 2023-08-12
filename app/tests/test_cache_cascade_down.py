@@ -14,7 +14,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src.cache.actions import cache_get
+from app.src.cache.actions import key_pattern_in_cache
 
 
 @pytest.mark.asyncio
@@ -39,7 +39,6 @@ async def test_cache_submenu_cascade_drop_after_drop(db_create_dishes: AsyncSess
     response = await async_client.delete(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    assert (await cache_get(menu_id, 'menu')) is None
-    # FIXME артефакт (((
-    assert (await cache_get(submenu_id, 'submenu'))
-    # assert (await cache_get(dish_id, "dish")) is None
+    assert not (await key_pattern_in_cache(f'{menu_id}:*:*'))
+    assert not (await key_pattern_in_cache(f'*:{submenu_id}:*'))
+    assert not (await key_pattern_in_cache(f'*:*:{dish_id}'))

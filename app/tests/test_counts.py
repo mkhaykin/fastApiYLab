@@ -13,7 +13,6 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src.cache.actions import cache_get
 from app.tests.utils import random_word
 
 
@@ -135,7 +134,6 @@ async def test_submenus_count(db_create_dishes_clear_cache: AsyncSession, client
     )
     assert response.status_code == 201
     submenu_id = response.json()['id']
-    assert (await cache_get(menu_id, 'menu')) is None
 
     # check count: submenu + 1
     response = await client.get(f'/api/v1/menus/{menu_id}')

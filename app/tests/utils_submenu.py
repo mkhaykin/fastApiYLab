@@ -65,6 +65,8 @@ async def check_submenu_eq_submenu(client: AsyncClient, submenu: dict):
 async def check_submenu_in_submenus(client: AsyncClient, submenu: dict):
     response = await client.get(f"/api/v1/menus/{submenu['menu_id']}/submenus")
     assert response.status_code == 200
+    print(submenu)
+    print(response.json())
     assert response.json() and any(
         map(
             lambda item: compare_response(item, submenu),

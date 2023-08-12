@@ -9,7 +9,7 @@ from .base import BaseService
 
 
 class MenusService(BaseService):
-    def __init__(self, repo: MenuRepository = Depends()):
+    def __init__(self, repo: MenuRepository = Depends(MenuRepository)):
         self.repo = repo
 
     async def get_all(self) -> list[schemas.GetMenu]:

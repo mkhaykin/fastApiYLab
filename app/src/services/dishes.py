@@ -3,14 +3,15 @@ from uuid import UUID
 from fastapi import Depends, HTTPException
 
 from app.src import schemas
-from app.src.cache.actions import cache_del
+
+# from app.src.cache.actions import cache_del
 from app.src.repos import DishesRepository
 
 from .base import BaseService
 
 
 class DishesService(BaseService):
-    def __init__(self, repo: DishesRepository = Depends()):
+    def __init__(self, repo: DishesRepository = Depends(DishesRepository)):
         self.repo = repo
 
     async def get_all(self, menu_id: UUID, submenu_id: UUID) -> list[schemas.GetDish]:
@@ -26,8 +27,8 @@ class DishesService(BaseService):
     async def create(self, menu_id: UUID, submenu_id: UUID, dish: schemas.CreateDishIn) -> schemas.CreateDishOut:
         await self.repo.check(menu_id, submenu_id)
         result = await self.repo.create_dish(menu_id, submenu_id, dish)
-        await cache_del(menu_id, 'menu')
-        await cache_del(submenu_id, 'submenu')
+        # await cache_del(menu_id, 'menu')
+        # await cache_del(submenu_id, 'submenu')
         return result
 
     async def update(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID,
