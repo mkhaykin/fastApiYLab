@@ -31,8 +31,8 @@ class MenuRepository(BaseRepository):
         await self._cache.cache_set(f"{menu_id if menu_id else 'menu'}:None:None", result)
         return result
 
-    async def create_menu(self, obj: schemas.CreateMenuIn) -> schemas.CreateMenuOut:
-        return schemas.CreateMenuOut(**await self._create(**obj.model_dump()))
+    async def create_menu(self, obj: schemas.CreateMenuIn, obj_id: UUID | None = None) -> schemas.CreateMenuOut:
+        return schemas.CreateMenuOut(**await self._create(**obj.model_dump(), id=obj_id))
 
     async def update_menu(self, menu_id: UUID, menu: schemas.UpdateMenuIn) -> schemas.UpdateMenuOut:
         if self._cache:
