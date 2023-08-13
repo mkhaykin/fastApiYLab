@@ -25,7 +25,7 @@ async def get_menu(menu_id: UUID, service: MenusService = Depends()):
     return await service.get(menu_id)
 
 
-@router.get('/api/v1/full_menus',
+@router.get('/api/v1/full',
             summary='Get all menus with linked elements',
             status_code=http.HTTPStatus.OK)
 async def get_menus_full(service: MenusService = Depends()):

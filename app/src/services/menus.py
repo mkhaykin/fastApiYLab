@@ -10,8 +10,11 @@ from .submenus import SubMenusService
 
 
 class MenusService(BaseService):
-    def __init__(self, repo: MenuRepository = Depends(MenuRepository)):
+    def __init__(self, repo: MenuRepository = Depends(MenuRepository),
+                 service_submenu: SubMenusService = Depends()):
         self.repo = repo
+        self.service_submenu = service_submenu
+        print(self.repo)
 
     async def get_all(self) -> list[schemas.GetMenu]:
         return await self.repo.get_by_ids()
@@ -21,7 +24,7 @@ class MenusService(BaseService):
         menus: list[schemas.GetMenu] = await self.repo.get_by_ids()
         for menu in menus:
             result_menu: schemas.GetMenuFull
-            submenus = await SubMenusService().get_full(menu.id)
+            submenus = await self.service_submenu.get_full(menu.id)
             result_menu = schemas.GetMenuFull(**menu.model_dump(), submenus=submenus)
             result.append(result_menu)
         return result
@@ -30,7 +33,7 @@ class MenusService(BaseService):
         result = await self.repo.get_by_ids(menu_id)
         if len(result) == 0:
             raise HTTPException(404, 'menu not found')
-        return result[0]    # TODO check if more one
+        return result[0]  # TODO check if more one
 
     async def create(self, menu: schemas.CreateMenuIn) -> schemas.CreateMenuOut:
         return await self.repo.create_menu(menu)

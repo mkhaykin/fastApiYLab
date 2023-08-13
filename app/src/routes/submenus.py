@@ -25,6 +25,14 @@ async def get_submenu(menu_id: UUID, submenu_id: UUID, service: SubMenusService 
     return await service.get(menu_id, submenu_id)
 
 
+# GET /app/v1/menus/{{api_test_menu_id}}/full
+@router.get('/api/v1/menus/{menu_id}/full',
+            summary='Get all menus with linked elements',
+            status_code=http.HTTPStatus.OK)
+async def get_submenus_full(menu_id: UUID, service: SubMenusService = Depends()):
+    return await service.get_full(menu_id)
+
+
 # POST /app/v1/menus/{{api_test_menu_id}}/submenus
 @router.post('/api/v1/menus/{menu_id}/submenus',
              summary='Create the submenu',
