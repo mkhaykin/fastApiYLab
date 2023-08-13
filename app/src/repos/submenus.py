@@ -36,11 +36,15 @@ class SubMenuRepository(BaseRepository):
         await self._cache.cache_set(f"{menu_id}:{submenu_id if submenu_id else 'submenu'}:None", result)
         return result
 
-    async def create_submenu(self, menu_id: UUID, menu: schemas.CreateSubMenuIn) -> schemas.CreateSubMenuOut:
+    async def create_submenu(self,
+                             menu_id: UUID,
+                             menu: schemas.CreateSubMenuIn,
+                             obj_id: UUID | None = None,
+                             ) -> schemas.CreateSubMenuOut:
         await self.check(menu_id)
         if self._cache:
             await self._cache.cache_del_pattern(f'{menu_id}:*:*')
-        return schemas.CreateSubMenuOut(**await self._create(**{'menu_id': menu_id, **menu.model_dump()}))
+        return schemas.CreateSubMenuOut(**await self._create(**{'menu_id': menu_id, **menu.model_dump(), 'id': obj_id}))
 
     async def update_submenu(self, menu_id: UUID, submenu_id: UUID,
                              submenu: schemas.UpdateSubMenuIn) -> schemas.UpdateSubMenuOut:

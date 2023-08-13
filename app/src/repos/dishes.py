@@ -39,11 +39,17 @@ class DishesRepository(BaseRepository):
         await self._cache.cache_set(f"{menu_id}:{submenu_id}:{dish_id if dish_id else 'dish'}", result)
         return result
 
-    async def create_dish(self, menu_id: UUID, submenu_id: UUID, dish: schemas.CreateDishIn) -> schemas.CreateDishOut:
+    async def create_dish(self,
+                          menu_id: UUID,
+                          submenu_id: UUID,
+                          dish: schemas.CreateDishIn,
+                          obj_id: UUID | None = None,
+                          ) -> schemas.CreateDishOut:
         await self.check(menu_id, submenu_id)
         if self._cache:
             await self._cache.cache_del_pattern(f'{menu_id}:*:*')
-        return schemas.CreateDishOut(**await self._create(**{'submenu_id': submenu_id, **dish.model_dump()}))
+        return schemas.CreateDishOut(
+            **await self._create(**{'submenu_id': submenu_id, **dish.model_dump(), 'id': obj_id}))
 
     async def update_dish(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID,
                           dish: schemas.UpdateDishIn) -> schemas.UpdateDishOut:
@@ -56,7 +62,7 @@ class DishesRepository(BaseRepository):
         await self.check(menu_id, submenu_id)
         if self._cache:
             await self._cache.cache_del_pattern(f'{menu_id}:*:*')
-            await self._cache.cache_del_pattern(f'*:{submenu_id}:*')    # TODO ? need
-            await self._cache.cache_del_pattern(f'*:*:{dish_id}')       # TODO ? need
+            await self._cache.cache_del_pattern(f'*:{submenu_id}:*')  # TODO ? need
+            await self._cache.cache_del_pattern(f'*:*:{dish_id}')  # TODO ? need
         await self._delete(dish_id)
         return
