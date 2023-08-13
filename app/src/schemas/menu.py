@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from .base import BaseSchema
+from .submenus import GetSubMenuFull
 
 
 class BaseMenu(BaseSchema):
@@ -22,6 +23,14 @@ class GetMenu(BaseMenu):
     id: UUID
     submenus_count: int
     dishes_count: int
+    pass
+
+
+class GetMenuFull(BaseMenu):
+    id: UUID
+    submenus_count: int
+    dishes_count: int
+    submenus: list[GetSubMenuFull | None]
     pass
 
 

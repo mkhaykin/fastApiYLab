@@ -6,6 +6,7 @@ from app.src import schemas
 from app.src.repos import MenuRepository
 
 from .base import BaseService
+from .submenus import SubMenusService
 
 
 class MenusService(BaseService):
@@ -14,6 +15,16 @@ class MenusService(BaseService):
 
     async def get_all(self) -> list[schemas.GetMenu]:
         return await self.repo.get_by_ids()
+
+    async def get_full(self) -> list[schemas.GetMenuFull]:
+        result: list[schemas.GetMenuFull] = []
+        menus: list[schemas.GetMenu] = await self.repo.get_by_ids()
+        for menu in menus:
+            result_menu: schemas.GetMenuFull
+            submenus = await SubMenusService().get_full(menu.id)
+            result_menu = schemas.GetMenuFull(**menu.model_dump(), submenus=submenus)
+            result.append(result_menu)
+        return result
 
     async def get(self, menu_id: UUID) -> schemas.GetMenu | None:
         result = await self.repo.get_by_ids(menu_id)
