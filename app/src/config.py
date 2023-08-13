@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     RABBITMQ_DEFAULT_PASS: str = ''
     RABBITMQ_DEFAULT_VHOST: str = ''
 
+    PATH_TO_STORE: str = ''
+
     model_config = SettingsConfigDict(env_file='.env')
 
 

@@ -70,3 +70,4 @@ vine==5.0.0
 virtualenv==20.24.2
 wcwidth==0.2.6
 wrapt==1.15.0
+xlrd==1.2.0
