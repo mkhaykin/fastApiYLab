@@ -18,30 +18,30 @@ class BaseRepository:
         self._session = session  # TODO ? need ?
         self._cache = cache
 
-    async def reset_cache(self):
-        # drop all cached data for all CRUD object
-        objs = await self.get_all()
-        for obj in objs:
-            await self.del_from_cache(obj)
+    # async def reset_cache(self):
+    #     # drop all cached data for all CRUD object
+    #     objs = await self.get_all()
+    #     for obj in objs:
+    #         await self.del_from_cache(obj)
 
-    def get_cache_key(self, obj: models.BaseModel) -> str:
-        key: str = str(obj.__dict__['id'])
-        return key
+    # def get_cache_key(self, obj: models.BaseModel) -> str:
+    #     key: str = str(obj.__dict__['id'])
+    #     return key
 
-    async def add_to_cache(self, obj: models.BaseModel) -> None:
-        # add data to cache
-        # await cache_set(self.get_cache_key(obj), self.crud.name, obj)
-        return None
+    # async def add_to_cache(self, obj: models.BaseModel) -> None:
+    #     # add data to cache
+    #     # await cache_set(self.get_cache_key(obj), self.crud.name, obj)
+    #     return None
 
-    async def del_from_cache(self, obj_id: UUID) -> None:
-        # drop cached data for id
-        # await cache_del(obj_id, self.crud.name)
-        return None
+    # async def del_from_cache(self, obj_id: UUID) -> None:
+    #     # drop cached data for id
+    #     # await cache_del(obj_id, self.crud.name)
+    #     return None
 
-    async def get_from_cache(self, obj_id: UUID) -> dict | None:
-        # drop cached data for id
-        # return await cache_get(obj_id, self.crud.name)
-        return None
+    # async def get_from_cache(self, obj_id: UUID) -> dict | None:
+    #     # drop cached data for id
+    #     # return await cache_get(obj_id, self.crud.name)
+    #     return None
 
     async def get_all(self):
         # TODO: check unused !
