@@ -5,7 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi.encoders import jsonable_encoder
 
 from app.src import schemas
-from app.src.cache import Cache, get_cache
+from app.src.cache import CacheDishesHandler, CacheSubMenusHandler
 from app.src.services import DishesService
 
 router = APIRouter()
@@ -55,9 +55,9 @@ async def create_dish(
         dish: schemas.CreateDishIn,
         background_tasks: BackgroundTasks,
         service: DishesService = Depends(),
-        cache: Cache = Depends(get_cache),
+        cache_handler: CacheSubMenusHandler = Depends(CacheSubMenusHandler),
 ):
-    background_tasks.add_task(cache.cache_del_pattern, f'{menu_id}:*:*')
+    background_tasks.add_task(cache_handler.delete, menu_id, submenu_id)
     return jsonable_encoder(await service.create(menu_id, submenu_id, dish),
                             custom_encoder=DISH_PRICE_ENCODER)
 
@@ -74,9 +74,10 @@ async def patch_dish(
         dish: schemas.UpdateDishIn,
         background_tasks: BackgroundTasks,
         service: DishesService = Depends(),
-        cache: Cache = Depends(get_cache),
+        cache_handler: CacheDishesHandler = Depends(),
 ):
-    background_tasks.add_task(cache.cache_del_pattern, f'*:*:{dish_id}')
+    # background_tasks.add_task(cache.cache_del_pattern, f'*:*:{dish_id}')
+    background_tasks.add_task(cache_handler.delete, menu_id, submenu_id, dish_id)
     return jsonable_encoder(await service.update(menu_id, submenu_id, dish_id, dish),
                             custom_encoder=DISH_PRICE_ENCODER)
 
@@ -92,9 +93,7 @@ async def delete_dish(
         dish_id: UUID,
         background_tasks: BackgroundTasks,
         service: DishesService = Depends(),
-        cache: Cache = Depends(get_cache),
+        cache_handler: CacheDishesHandler = Depends(),
 ):
-    background_tasks.add_task(cache.cache_del_pattern, f'{menu_id}:*:*')
-    background_tasks.add_task(cache.cache_del_pattern, f'*:{submenu_id}:*')
-    background_tasks.add_task(cache.cache_del_pattern, f'*:*:{dish_id}')
+    background_tasks.add_task(cache_handler.delete, menu_id, submenu_id, dish_id)
     return await service.delete(menu_id, submenu_id, dish_id)

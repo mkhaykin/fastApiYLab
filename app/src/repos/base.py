@@ -13,7 +13,11 @@ class BaseRepository:
     _session: AsyncSession
     _name: str = 'base'
 
-    def __init__(self, session: AsyncSession = Depends(get_db), cache: Cache = Depends(get_cache)):
+    def __init__(
+            self,
+            session: AsyncSession = Depends(get_db),
+            cache: Cache = Depends(get_cache)
+    ):
         self._crud = crud.BaseCRUD(session)
         self._session = session  # TODO ? need ?
         self._cache = cache

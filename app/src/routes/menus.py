@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, Depends
 
 from app.src import schemas
-from app.src.cache import Cache, get_cache
+from app.src.cache import CacheMenusHandler
 from app.src.services import MenusService
 
 router = APIRouter()
@@ -53,10 +53,11 @@ async def create_menu(
         menu: schemas.CreateMenuIn,
         background_tasks: BackgroundTasks,
         service: MenusService = Depends(),
-        cache: Cache = Depends(get_cache),
+        cache_handler: CacheMenusHandler = Depends(CacheMenusHandler),
 ):
-    background_tasks.add_task(cache.cache_del, 'menu:None:None', )
-    return await service.create(menu)
+    result = await service.create(menu)
+    background_tasks.add_task(cache_handler.delete, None)
+    return result
 
 
 @router.patch(
@@ -69,11 +70,11 @@ async def update_menu(
         menu: schemas.UpdateMenuIn,
         background_tasks: BackgroundTasks,
         service: MenusService = Depends(),
-        cache: Cache = Depends(get_cache),
+        cache_handler: CacheMenusHandler = Depends(),
 ):
-    background_tasks.add_task(cache.cache_del, 'menu:None:None')
-    background_tasks.add_task(cache.cache_del_pattern, f'{menu_id}:*:*')
-    return await service.update(menu_id, menu)
+    result = await service.update(menu_id, menu)
+    background_tasks.add_task(cache_handler.delete, menu_id)
+    return result
 
 
 @router.delete(
@@ -85,8 +86,8 @@ async def delete_menu(
         menu_id: UUID,
         background_tasks: BackgroundTasks,
         service: MenusService = Depends(),
-        cache: Cache = Depends(get_cache),
+        cache_handler: CacheMenusHandler = Depends(CacheMenusHandler),
 ):
-    background_tasks.add_task(cache.cache_del, 'menu:None:None')
-    background_tasks.add_task(cache.cache_del_pattern, f'{menu_id}:*:*')
-    return await service.delete(menu_id)
+    await service.delete(menu_id)
+    background_tasks.add_task(cache_handler.delete, menu_id)
+    return

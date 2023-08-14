@@ -1,3 +1,6 @@
+"""
+    Функции для тестирования с использованием кеша
+"""
 from typing import TypeVar
 
 from app.src.models.base import Base

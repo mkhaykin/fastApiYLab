@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, Depends
 
 from app.src import schemas
-from app.src.cache import Cache, get_cache
+from app.src.cache import CacheMenusHandler, CacheSubMenusHandler
 from app.src.services import SubMenusService
 
 router = APIRouter()
@@ -56,10 +56,11 @@ async def create_submenu(
         submenu: schemas.CreateSubMenuIn,
         background_tasks: BackgroundTasks,
         service: SubMenusService = Depends(),
-        cache: Cache = Depends(get_cache),
+        cache_handler: CacheMenusHandler = Depends(CacheMenusHandler),
 ):
-    background_tasks.add_task(cache.cache_del_pattern, f'{menu_id}:*:*')
-    return await service.create(menu_id, submenu)
+    result = await service.create(menu_id, submenu)
+    background_tasks.add_task(cache_handler.delete, menu_id)
+    return result
 
 
 @router.patch(
@@ -73,10 +74,11 @@ async def patch_submenu(
         submenu: schemas.UpdateSubMenuIn,
         background_tasks: BackgroundTasks,
         service: SubMenusService = Depends(),
-        cache: Cache = Depends(get_cache),
+        cache_handler: CacheSubMenusHandler = Depends(CacheSubMenusHandler),
 ):
-    background_tasks.add_task(cache.cache_del_pattern, f'*:{submenu_id}:*')
-    return await service.update(menu_id, submenu_id, submenu)
+    result = await service.update(menu_id, submenu_id, submenu)
+    background_tasks.add_task(cache_handler.delete, menu_id, submenu_id)
+    return result
 
 
 @router.delete(
@@ -89,7 +91,8 @@ async def delete_submenu(
         submenu_id: UUID,
         background_tasks: BackgroundTasks,
         service: SubMenusService = Depends(),
-        cache: Cache = Depends(get_cache),
+        cache_handler: CacheSubMenusHandler = Depends(CacheSubMenusHandler),
 ):
-    background_tasks.add_task(cache.cache_del_pattern, f'{menu_id}:*:*')
-    return await service.delete(menu_id, submenu_id)
+    await service.delete(menu_id, submenu_id)
+    background_tasks.add_task(cache_handler.delete, menu_id, submenu_id)
+    return

@@ -8,7 +8,8 @@ from app.src.cache import Cache, get_cache
 from app.src.database import get_db
 
 from .base import BaseRepository
-from .menus import MenuRepository
+
+# from .menus import MenuRepository
 from .submenus import SubMenuRepository
 
 
@@ -19,20 +20,28 @@ class DishesRepository(BaseRepository):
     def __init__(
             self,
             session: AsyncSession = Depends(get_db),
-            cache: Cache = Depends(get_cache)
+            cache: Cache = Depends(get_cache),
+            menu_repo: SubMenuRepository = Depends(),
+            submenu_repo: SubMenuRepository = Depends(),
     ):
         super().__init__(session, cache)
         self._crud = crud.DishesCRUD(session)
+        self._submenu_repo = submenu_repo
+        self._menu_repo = menu_repo
 
     async def check(
             self,
             menu_id: UUID,
             submenu_id: UUID
     ) -> None:
-        if not (await MenuRepository(self._session, self._cache).get_by_ids(menu_id)):
+        if not (await self._menu_repo.get_by_ids(menu_id)):
             raise HTTPException(404, 'menu not found')
-        if not (await SubMenuRepository(self._session, self._cache).get_by_ids(menu_id, submenu_id)):
+        if not (await self._submenu_repo.get_by_ids(menu_id, submenu_id)):
             raise HTTPException(404, 'submenu not found')
+        # if not (await MenuRepository(self._session, self._cache).get_by_ids(menu_id)):
+        #     raise HTTPException(404, 'menu not found')
+        # if not (await SubMenuRepository(self._session, self._cache).get_by_ids(menu_id, submenu_id)):
+        #     raise HTTPException(404, 'submenu not found')
 
     async def get_by_ids(
             self,

@@ -4,7 +4,8 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src import crud, schemas
-from app.src.cache import Cache, get_cache
+from app.src.cache import CacheSubMenusHandler
+from app.src.cache.cache import Cache
 from app.src.database import get_db
 
 from .base import BaseRepository
@@ -18,16 +19,19 @@ class SubMenuRepository(BaseRepository):
     def __init__(
             self,
             session: AsyncSession = Depends(get_db),
-            cache: Cache = Depends(get_cache)
+            cache_handler: CacheSubMenusHandler = Depends(),
+            menu_repo: MenuRepository = Depends(),
     ):
-        super().__init__(session, cache)
+        super().__init__(session, Cache())
         self._crud = crud.SubMenusCRUD(session)
+        self._cache_handler = cache_handler
+        self._menu_repo = menu_repo
 
     async def check(
             self,
             menu_id: UUID
     ):
-        if not (await MenuRepository(self._session, self._cache).get_by_ids(menu_id)):
+        if not (await self._menu_repo.get_by_ids(menu_id)):
             raise HTTPException(status_code=404, detail='menu not found')
 
     async def get_by_ids(
@@ -35,16 +39,21 @@ class SubMenuRepository(BaseRepository):
             menu_id: UUID,
             submenu_id: UUID | None = None
     ) -> list[schemas.GetSubMenu]:
-        if self._cache:
-            cache: list[schemas.BaseSchema] | None
-            cache = await self._cache.cache_get(f"{menu_id}:{submenu_id if submenu_id else 'submenu'}:None")
-            if cache:
-                return cache
+        cache: list[schemas.GetSubMenu] | None
+        cache = await self._cache_handler.get(menu_id, submenu_id)
+        if cache:
+            return cache
+        # if self._cache:
+        #     cache: list[schemas.BaseSchema] | None
+        #     cache = await self._cache.cache_get(f"{menu_id}:{submenu_id if submenu_id else 'submenu'}:None")
+        #     if cache:
+        #         return cache
 
         items = await crud.SubMenusCRUD(self._session).get_by_ids(menu_id, submenu_id)
         result = [schemas.GetSubMenu(**item) for item in items]
 
-        await self._cache.cache_set(f"{menu_id}:{submenu_id if submenu_id else 'submenu'}:None", result)
+        # await self._cache.cache_set(f"{menu_id}:{submenu_id if submenu_id else 'submenu'}:None", result)
+        await self._cache_handler.add(menu_id, submenu_id, result)
         return result
 
     async def create_submenu(
