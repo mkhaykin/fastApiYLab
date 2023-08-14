@@ -29,7 +29,6 @@ async def test_menu_exist(db_create_menus: AsyncSession, async_client: AsyncClie
 async def test_submenus(db_create_menus: AsyncSession, async_client: AsyncClient):
     response = await async_client.get('/api/v1/menus/00000000-0001-0000-0000-000000000000/submenus')
     assert response.status_code == 200
-    print(response.json())
     assert not response.json()
 
 

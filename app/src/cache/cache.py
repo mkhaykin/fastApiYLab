@@ -25,13 +25,11 @@ class Cache:
         await self.client.flushall(asynchronous=True)
 
     async def cache_set(self, key: UUID | str, data: list[schemas.TBaseSchema]) -> None:
-        print('set cache')
         byte_data = pickle.dumps(data)
         await self.client.set(str(key), byte_data, ex=30)
         return
 
     async def cache_get(self, key: UUID | str) -> list[schemas.TBaseSchema] | None:
-        print('get cache')
         data = await self.client.get(str(key))
         if not data:
             return None
@@ -39,13 +37,11 @@ class Cache:
         return data
 
     async def cache_del_pattern(self, pattern: str) -> None:
-        print('del cache pattern')
         for key in await (self.client.keys(pattern)):
             await self.client.delete(key)
         return
 
     async def cache_del(self, key: UUID | str) -> None:
-        print('del cache')
         await self.client.delete(str(key))
         return
 

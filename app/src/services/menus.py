@@ -14,7 +14,6 @@ class MenusService(BaseService):
                  service_submenu: SubMenusService = Depends()):
         self.repo = repo
         self.service_submenu = service_submenu
-        print(self.repo)
 
     async def get_all(self) -> list[schemas.GetMenu]:
         return await self.repo.get_by_ids()
