@@ -15,7 +15,6 @@ class DishesService(BaseService):
             self,
             repo: DishesRepository = Depends()
     ):
-        print('dishes service')
         self.repo = repo
 
     async def get_all(

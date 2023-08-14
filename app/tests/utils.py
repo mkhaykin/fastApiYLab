@@ -12,9 +12,6 @@ def round_price(price: str) -> str:
 
 
 def compare_response(answer, standard: dict) -> bool:
-    # assert answer.__dict__
-    # print(answer)
-    # print(standard)
     return all(key in answer and value == answer[key] for key, value in standard.items())
 
 

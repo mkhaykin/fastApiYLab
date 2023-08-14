@@ -35,7 +35,6 @@ class MenusService(BaseService):
         return result[0]  # TODO check if more one
 
     async def create(self, menu: schemas.CreateMenuIn) -> schemas.CreateMenuOut:
-        print('!!!')
         return await self.repo.create_menu(menu)
 
     async def update(self, menu_id: UUID, menu: schemas.UpdateMenuIn) -> schemas.UpdateMenuIn:

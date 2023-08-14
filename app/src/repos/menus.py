@@ -15,8 +15,8 @@ class MenuRepository(BaseRepository):
 
     def __init__(
             self,
-            cache_handler: CacheMenusHandler = Depends(),
             crud: MenusCRUD = Depends(),
+            cache_handler: CacheMenusHandler = Depends(),
     ):
         super().__init__(crud)
         self._cache_handler = cache_handler
@@ -31,7 +31,6 @@ class MenuRepository(BaseRepository):
             return cache
 
         items = await self._crud.get_by_ids(menu_id)
-        print(items)
         result = [schemas.GetMenu(**item) for item in items]
 
         await self._cache_handler.add(menu_id, result)
