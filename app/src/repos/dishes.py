@@ -7,6 +7,7 @@ from app.src.cache import CacheDishesHandler
 from app.src.crud import DishesCRUD
 
 from .base import BaseRepository
+from .menus import MenuRepository
 from .submenus import SubMenuRepository
 
 
@@ -18,7 +19,7 @@ class DishesRepository(BaseRepository):
             self,
             crud: DishesCRUD = Depends(),
             cache_handler: CacheDishesHandler = Depends(),
-            menu_repo: SubMenuRepository = Depends(),
+            menu_repo: MenuRepository = Depends(),
             submenu_repo: SubMenuRepository = Depends(),
     ):
         super().__init__(crud)
