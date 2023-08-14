@@ -51,14 +51,14 @@ class DishesRepository(BaseRepository):
     ) -> list[schemas.GetDish]:
         if self._cache:
             cache: list[schemas.BaseSchema] | None
-            cache = await self._cache.cache_get(f"{menu_id}:{submenu_id}:{dish_id if dish_id else 'dish'}")
+            cache = await self._cache.get(f"{menu_id}:{submenu_id}:{dish_id if dish_id else 'dish'}")
             if cache:
                 return cache
 
         items = await crud.DishesCRUD(self._session).get_by_ids(menu_id, submenu_id, dish_id)
         result = [schemas.GetDish(**item) for item in items]
 
-        await self._cache.cache_set(f"{menu_id}:{submenu_id}:{dish_id if dish_id else 'dish'}", result)
+        await self._cache.set(f"{menu_id}:{submenu_id}:{dish_id if dish_id else 'dish'}", result)
         return result
 
     async def create_dish(
