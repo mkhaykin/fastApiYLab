@@ -13,7 +13,6 @@ router = APIRouter()
 DISH_PRICE_ENCODER = {float: lambda x: f'{round(float(x), 2):.2f}'}
 
 
-# GET /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes
 @router.get(
     path='/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
     summary='Get all dishes from a submenu',
@@ -29,7 +28,6 @@ async def get_dishes(
     return jsonable_encoder(res, custom_encoder=DISH_PRICE_ENCODER)
 
 
-# GET /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
 @router.get(
     path='/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
     summary='Get the dish by and id',
@@ -46,7 +44,6 @@ async def get_dish(
                             custom_encoder=DISH_PRICE_ENCODER)
 
 
-# POST /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes
 @router.post(
     path='/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
     summary='Create the dish',
@@ -65,9 +62,8 @@ async def create_dish(
                             custom_encoder=DISH_PRICE_ENCODER)
 
 
-# PATCH /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
 @router.patch(
-    '/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
+    path='/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
     summary='Update the dish',
     status_code=http.HTTPStatus.OK,
 )
@@ -85,9 +81,8 @@ async def patch_dish(
                             custom_encoder=DISH_PRICE_ENCODER)
 
 
-# DELETE /app/v1/menus/{{api_test_menu_id}}/submenus/{{api_test_submenu_id}}/dishes/{{api_test_dish_id}}
 @router.delete(
-    '/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
+    path='/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
     summary='Delete the dish',
     status_code=http.HTTPStatus.OK,
 )

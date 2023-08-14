@@ -54,8 +54,6 @@ class SubMenuRepository(BaseRepository):
             obj_id: UUID | None = None,
     ) -> schemas.CreateSubMenuOut:
         await self.check(menu_id)
-        # if self._cache:
-        #     await self._cache.cache_del_pattern(f'{menu_id}:*:*')
         return schemas.CreateSubMenuOut(**await self._create(**{'menu_id': menu_id, **menu.model_dump(), 'id': obj_id}))
 
     async def update_submenu(
@@ -64,8 +62,6 @@ class SubMenuRepository(BaseRepository):
             submenu_id: UUID,
             submenu: schemas.UpdateSubMenuIn
     ) -> schemas.UpdateSubMenuOut:
-        # if self._cache:
-        #     await self._cache.cache_del_pattern(f'*:{submenu_id}:*')
         await self.check(menu_id)
         return schemas.UpdateSubMenuOut(**await self._update(submenu_id, **submenu.model_dump()))
 
@@ -75,6 +71,4 @@ class SubMenuRepository(BaseRepository):
             submenu_id: UUID
     ):
         await self.check(menu_id)
-        # if self._cache:
-        #     await self._cache.cache_del_pattern(f'{menu_id}:*:*')
         await self._delete(submenu_id)
