@@ -13,8 +13,9 @@ from .base import BaseService
 class DishesService(BaseService):
     def __init__(
             self,
-            repo: DishesRepository = Depends(DishesRepository)
+            repo: DishesRepository = Depends()
     ):
+        print('dishes service')
         self.repo = repo
 
     async def get_all(

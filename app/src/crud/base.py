@@ -1,12 +1,13 @@
 from typing import TypeVar
 from uuid import UUID
 
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from sqlalchemy import Select, select
 from sqlalchemy.exc import DatabaseError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src import models
+from app.src.database import get_db
 
 
 class BaseCRUD:
@@ -15,7 +16,8 @@ class BaseCRUD:
     _name_for_error: str = ''
     _session: AsyncSession
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession = Depends(get_db)):
+        self._model = models.BaseModel
         self._session = session
 
     @property

@@ -1,9 +1,12 @@
 from typing import Sequence
 from uuid import UUID
 
+from fastapi import Depends
 from sqlalchemy import RowMapping, distinct, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src import models
+from app.src.database import get_db
 
 from .base import BaseCRUD
 
@@ -12,8 +15,9 @@ class MenusCRUD(BaseCRUD):
     _model = models.Menus
     _name_for_error = 'menu'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, session: AsyncSession = Depends(get_db)):
+        super().__init__(session)
+        self._model = models.Menus
         self._base_select = (
             select(
                 models.Menus.id,

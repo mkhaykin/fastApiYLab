@@ -3,31 +3,31 @@ from uuid import UUID
 from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src import crud, schemas
-from app.src.cache import Cache, get_cache
+from app.src import schemas
+from app.src.cache import CacheDishesHandler
+from app.src.crud import DishesCRUD
 from app.src.database import get_db
 
 from .base import BaseRepository
-
-# from .menus import MenuRepository
 from .submenus import SubMenuRepository
 
 
 class DishesRepository(BaseRepository):
-    _crud: crud.DishesCRUD
+    _crud: DishesCRUD
     _name: str = 'dish'
 
     def __init__(
             self,
             session: AsyncSession = Depends(get_db),
-            cache: Cache = Depends(get_cache),
+            crud: DishesCRUD = Depends(),
             menu_repo: SubMenuRepository = Depends(),
             submenu_repo: SubMenuRepository = Depends(),
+            cache_handler: CacheDishesHandler = Depends(),
     ):
-        super().__init__(session, cache)
-        self._crud = crud.DishesCRUD(session)
+        super().__init__(session, crud)
         self._submenu_repo = submenu_repo
         self._menu_repo = menu_repo
+        self._cache_handler = cache_handler
 
     async def check(
             self,
@@ -45,16 +45,15 @@ class DishesRepository(BaseRepository):
             submenu_id: UUID,
             dish_id: UUID | None = None
     ) -> list[schemas.GetDish]:
-        if self._cache:
-            cache: list[schemas.BaseSchema] | None
-            cache = await self._cache.get(f"{menu_id}:{submenu_id}:{dish_id if dish_id else 'dish'}")
-            if cache:
-                return cache
+        cache: list[schemas.GetDish] | None
+        cache = await self._cache_handler.get(menu_id, submenu_id, dish_id)
+        if cache:
+            return cache
 
-        items = await crud.DishesCRUD(self._session).get_by_ids(menu_id, submenu_id, dish_id)
+        items = await self._crud.get_by_ids(menu_id, submenu_id, dish_id)
         result = [schemas.GetDish(**item) for item in items]
 
-        await self._cache.set(f"{menu_id}:{submenu_id}:{dish_id if dish_id else 'dish'}", result)
+        await self._cache_handler.add(menu_id, submenu_id, dish_id, result)
         return result
 
     async def create_dish(

@@ -3,26 +3,25 @@ from uuid import UUID
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src import crud, schemas
+from app.src import schemas
 from app.src.cache.menus import CacheMenusHandler
+from app.src.crud import MenusCRUD
 from app.src.database import get_db
 
 from .base import BaseRepository
 
 
 class MenuRepository(BaseRepository):
-    _crud: crud.MenusCRUD
+    _crud: MenusCRUD
     _name: str = 'menu'
 
     def __init__(
             self,
             session: AsyncSession = Depends(get_db),
             cache_handler: CacheMenusHandler = Depends(),
+            crud: MenusCRUD = Depends(),
     ):
-        # super().__init__(session, Cache())
-        self._crud = crud.MenusCRUD(session)
-        self._session = session  # TODO ? need ?
-        self._crud = crud.MenusCRUD(session)
+        super().__init__(session, crud)
         self._cache_handler = cache_handler
 
     async def get_by_ids(
@@ -34,7 +33,8 @@ class MenuRepository(BaseRepository):
         if cache:
             return cache
 
-        items = await crud.MenusCRUD(self._session).get_by_ids(menu_id)
+        items = await self._crud.get_by_ids(menu_id)
+        print(items)
         result = [schemas.GetMenu(**item) for item in items]
 
         await self._cache_handler.add(menu_id, result)

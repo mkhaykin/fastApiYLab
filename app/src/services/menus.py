@@ -10,7 +10,7 @@ from .submenus import SubMenusService
 
 
 class MenusService(BaseService):
-    def __init__(self, repo: MenuRepository = Depends(MenuRepository),
+    def __init__(self, repo: MenuRepository = Depends(),
                  service_submenu: SubMenusService = Depends()):
         self.repo = repo
         self.service_submenu = service_submenu
@@ -35,6 +35,7 @@ class MenusService(BaseService):
         return result[0]  # TODO check if more one
 
     async def create(self, menu: schemas.CreateMenuIn) -> schemas.CreateMenuOut:
+        print('!!!')
         return await self.repo.create_menu(menu)
 
     async def update(self, menu_id: UUID, menu: schemas.UpdateMenuIn) -> schemas.UpdateMenuIn:

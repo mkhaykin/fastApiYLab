@@ -12,7 +12,7 @@ from .dishes import DishesService
 class SubMenusService(BaseService):
     def __init__(
             self,
-            repo: SubMenuRepository = Depends(SubMenuRepository),
+            repo: SubMenuRepository = Depends(),
             service_dishes: DishesService = Depends()
     ):
         self.repo = repo

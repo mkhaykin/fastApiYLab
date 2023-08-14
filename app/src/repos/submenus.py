@@ -3,9 +3,9 @@ from uuid import UUID
 from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src import crud, schemas
+from app.src import schemas
 from app.src.cache import CacheSubMenusHandler
-from app.src.cache.cache import Cache
+from app.src.crud import SubMenusCRUD
 from app.src.database import get_db
 
 from .base import BaseRepository
@@ -13,17 +13,17 @@ from .menus import MenuRepository
 
 
 class SubMenuRepository(BaseRepository):
-    _crud: crud.SubMenusCRUD
+    _crud: SubMenusCRUD
     _name: str = 'submenu'
 
     def __init__(
             self,
             session: AsyncSession = Depends(get_db),
+            crud: SubMenusCRUD = Depends(),
             cache_handler: CacheSubMenusHandler = Depends(),
             menu_repo: MenuRepository = Depends(),
     ):
-        super().__init__(session, Cache())
-        self._crud = crud.SubMenusCRUD(session)
+        super().__init__(session, crud)
         self._cache_handler = cache_handler
         self._menu_repo = menu_repo
 
@@ -44,7 +44,7 @@ class SubMenuRepository(BaseRepository):
         if cache:
             return cache
 
-        items = await crud.SubMenusCRUD(self._session).get_by_ids(menu_id, submenu_id)
+        items = await self._crud.get_by_ids(menu_id, submenu_id)
         result = [schemas.GetSubMenu(**item) for item in items]
 
         await self._cache_handler.add(menu_id, submenu_id, result)
