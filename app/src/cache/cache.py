@@ -48,6 +48,9 @@ class Cache:
     def __str__(self):
         return 'redis cache'
 
+    async def task(self, *args) -> None:
+        print('You call me', args)
+
 
 cache = Cache()
 
