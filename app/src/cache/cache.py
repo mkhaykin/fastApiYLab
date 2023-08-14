@@ -1,12 +1,11 @@
 import pickle
 from uuid import UUID
 
-import aioredis
 from aioredis.client import Redis
 
 from app.src import schemas
 
-from .conn import REDIS_URL
+from .conn import client
 
 
 class Cache:
@@ -18,8 +17,7 @@ class Cache:
         return cls.__instance
 
     def __init__(self):
-        # if not Cache.__instance:
-        self.client: Redis = aioredis.from_url(REDIS_URL)
+        self.client: Redis = client
 
     async def reset(self) -> None:
         await self.client.flushall(asynchronous=True)
@@ -48,13 +46,7 @@ class Cache:
     def __str__(self):
         return 'redis cache'
 
-    async def task(self, *args) -> None:
-        print('You call me', args)
-
-
-cache = Cache()
-
 
 async def get_cache():
-    # cache = Cache()
+    cache = Cache()
     yield cache
