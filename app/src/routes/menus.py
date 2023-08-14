@@ -1,13 +1,22 @@
 import http
+import os
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends
 
 from app.src import schemas
 from app.src.cache import CacheMenusHandler
-from app.src.services import MenusService
+from app.src.config import settings
+from app.src.services import MenusService, XlsMenuService
 
 router = APIRouter()
+
+
+@router.get('/api/v1/menus/load')
+async def read_main(service: XlsMenuService = Depends()):
+    filename: str = os.path.join(settings.PATH_TO_STORE, 'Menu.xlsx')
+    await service.load_from_file(filename)
+    return {'msg': 'data loads slow'}
 
 
 @router.get(
