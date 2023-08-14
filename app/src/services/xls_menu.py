@@ -1,6 +1,7 @@
 from uuid import UUID
 
 import xlrd
+from fastapi import Depends
 
 from app.src import schemas
 from app.src.repos import DishesRepository, MenuRepository, SubMenuRepository
@@ -72,17 +73,13 @@ async def _read_file(filename: str) -> list[XlsItem]:
 
 class XlsMenuService(BaseService):
     def __init__(self,
-                 # repo_menus: MenuRepository = Depends(),
-                 # repo_submenus: SubMenuRepository = Depends(),
-                 # repo_dishes: DishesRepository = Depends(),
-                 db, cache
+                 repo_menus: MenuRepository = Depends(),
+                 repo_submenus: SubMenuRepository = Depends(),
+                 repo_dishes: DishesRepository = Depends(),
                  ):
-        # self.repo_menus = repo_menus
-        # self.repo_submenus = repo_submenus
-        # self.repo_dishes = repo_dishes
-        self.repo_menus = MenuRepository(db, cache)
-        self.repo_submenus = SubMenuRepository(db, cache)
-        self.repo_dishes = DishesRepository(db, cache)
+        self.repo_menus = repo_menus
+        self.repo_submenus = repo_submenus
+        self.repo_dishes = repo_dishes
 
     async def load_from_file(self, filename: str) -> None:
         # читаем файл в list

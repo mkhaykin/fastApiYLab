@@ -1,19 +1,37 @@
 import asyncio
 import os
 
-from app.src.cache import get_cache
+from app.src import crud
+from app.src.cache.dishes import CacheDishesHandler
+from app.src.cache.menus import CacheMenusHandler
+from app.src.cache.submenus import CacheSubMenusHandler
 from app.src.config import settings
 from app.src.database import get_db
+from app.src.repos import DishesRepository, MenuRepository, SubMenuRepository
 from app.src.services.xls_menu import XlsMenuService
 
 from .conn import app_celery
 
 
 async def async_xls_load():
-    db = await anext(get_db())
-    cache = await anext(get_cache())
+    session = await anext(get_db())
     filename: str = os.path.join(settings.PATH_TO_STORE, 'Menu.xlsx')
-    await XlsMenuService(db, cache).load_from_file(filename)
+    cache_menu_handler = CacheMenusHandler()
+    crud_menu = crud.MenusCRUD(session)
+    repo_menus = MenuRepository(crud_menu, cache_menu_handler)
+
+    cache_submenu_handler = CacheSubMenusHandler()
+    crud_submenu = crud.SubMenusCRUD(session)
+    repo_submenus = SubMenuRepository(crud_submenu, cache_submenu_handler, repo_menus)
+
+    cache_dishes_handler = CacheDishesHandler()
+    crud_dishes = crud.DishesCRUD(session)
+    repo_dishes = DishesRepository(crud_dishes, cache_dishes_handler, repo_menus, repo_submenus)
+    await (XlsMenuService(
+        repo_menus=repo_menus,
+        repo_submenus=repo_submenus,
+        repo_dishes=repo_dishes)
+        .load_from_file(filename))
 
 
 @app_celery.task
