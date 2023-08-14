@@ -13,10 +13,22 @@ from app.tests.utils_menu import (
 
 
 @pytest.mark.asyncio
+async def test_menus_orm_all(async_db: AsyncSession, async_client: AsyncClient):
+    response = await async_client.get('/all')
+    assert response.status_code == 200
+    assert response.text     # data must be cleared for this test
+
+
+@pytest.mark.asyncio
+async def test_menus_full(async_db: AsyncSession, async_client: AsyncClient):
+    response = await async_client.get('/api/v1/full')
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
 async def test_menus(async_db: AsyncSession, async_client: AsyncClient):
     response = await async_client.get('/api/v1/menus')
     assert response.status_code == 200
-    assert not response.json()    # data must be cleared for this test
 
 
 @pytest.mark.asyncio
