@@ -1,12 +1,10 @@
 from uuid import UUID
 
 from fastapi import Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src import schemas
 from app.src.cache import CacheDishesHandler
 from app.src.crud import DishesCRUD
-from app.src.database import get_db
 
 from .base import BaseRepository
 from .submenus import SubMenuRepository
@@ -18,16 +16,15 @@ class DishesRepository(BaseRepository):
 
     def __init__(
             self,
-            session: AsyncSession = Depends(get_db),
             crud: DishesCRUD = Depends(),
+            cache_handler: CacheDishesHandler = Depends(),
             menu_repo: SubMenuRepository = Depends(),
             submenu_repo: SubMenuRepository = Depends(),
-            cache_handler: CacheDishesHandler = Depends(),
     ):
-        super().__init__(session, crud)
-        self._submenu_repo = submenu_repo
-        self._menu_repo = menu_repo
+        super().__init__(crud)
         self._cache_handler = cache_handler
+        self._menu_repo = menu_repo
+        self._submenu_repo = submenu_repo
 
     async def check(
             self,

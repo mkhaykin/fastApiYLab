@@ -1,12 +1,10 @@
 from uuid import UUID
 
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src import schemas
 from app.src.cache.menus import CacheMenusHandler
 from app.src.crud import MenusCRUD
-from app.src.database import get_db
 
 from .base import BaseRepository
 
@@ -17,11 +15,10 @@ class MenuRepository(BaseRepository):
 
     def __init__(
             self,
-            session: AsyncSession = Depends(get_db),
             cache_handler: CacheMenusHandler = Depends(),
             crud: MenusCRUD = Depends(),
     ):
-        super().__init__(session, crud)
+        super().__init__(crud)
         self._cache_handler = cache_handler
 
     async def get_by_ids(
