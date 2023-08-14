@@ -43,16 +43,10 @@ class SubMenuRepository(BaseRepository):
         cache = await self._cache_handler.get(menu_id, submenu_id)
         if cache:
             return cache
-        # if self._cache:
-        #     cache: list[schemas.BaseSchema] | None
-        #     cache = await self._cache.cache_get(f"{menu_id}:{submenu_id if submenu_id else 'submenu'}:None")
-        #     if cache:
-        #         return cache
 
         items = await crud.SubMenusCRUD(self._session).get_by_ids(menu_id, submenu_id)
         result = [schemas.GetSubMenu(**item) for item in items]
 
-        # await self._cache.cache_set(f"{menu_id}:{submenu_id if submenu_id else 'submenu'}:None", result)
         await self._cache_handler.add(menu_id, submenu_id, result)
         return result
 

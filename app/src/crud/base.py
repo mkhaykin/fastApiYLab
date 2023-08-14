@@ -1,8 +1,8 @@
-from typing import Any, TypeVar
+from typing import TypeVar
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import Result, Select, select
+from sqlalchemy import Select, select
 from sqlalchemy.exc import DatabaseError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,23 +29,6 @@ class BaseCRUD:
     @property
     def name_for_error(self) -> str:
         return self._name_for_error if self._name_for_error else str(self._model.__tablename__)
-
-    async def get_all(self) -> Result[Any]:
-        # TODO ? unused method
-        """
-        Базовая заготовка для получения всех данных
-        :return: результат select
-        """
-        return await self._session.execute(self.base_select)
-
-    async def get(self, obj_id: UUID) -> Result[Any]:
-        # TODO ? unused method
-        """
-        Базовая заготовка для получения данных по выбранному объекту
-        :param obj_id: код объекта
-        :return: результат select
-        """
-        return await self._session.execute(self.base_select.where(self.model.id == obj_id))
 
     async def get_by_id(self, obj_id: UUID) -> models.TBaseModel:
         """
@@ -92,7 +75,6 @@ class BaseCRUD:
 
     async def delete(self, obj_id: UUID) -> None:
         db_obj: models.BaseModel = await self.get_by_id(obj_id)
-
         try:
             await self._session.delete(db_obj)
             await self._session.commit()

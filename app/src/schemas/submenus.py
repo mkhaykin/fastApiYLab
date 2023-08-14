@@ -23,7 +23,6 @@ class GetSubMenu(BaseSubMenu):
     id: UUID
     menu_id: UUID
     dishes_count: int
-    # menu_id: UUID | None = None
     pass
 
 

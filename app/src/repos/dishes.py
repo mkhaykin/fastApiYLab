@@ -38,10 +38,6 @@ class DishesRepository(BaseRepository):
             raise HTTPException(404, 'menu not found')
         if not (await self._submenu_repo.get_by_ids(menu_id, submenu_id)):
             raise HTTPException(404, 'submenu not found')
-        # if not (await MenuRepository(self._session, self._cache).get_by_ids(menu_id)):
-        #     raise HTTPException(404, 'menu not found')
-        # if not (await SubMenuRepository(self._session, self._cache).get_by_ids(menu_id, submenu_id)):
-        #     raise HTTPException(404, 'submenu not found')
 
     async def get_by_ids(
             self,

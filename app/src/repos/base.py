@@ -22,9 +22,9 @@ class BaseRepository:
         self._session = session  # TODO ? need ?
         self._cache = cache
 
-    async def get_all(self):
-        # TODO: check unused !
-        return (await self._crud.get_all()).mappings().all()
+    # async def get_all(self):
+    #     # TODO: check unused !
+    #     return (await self._crud.get_all()).mappings().all()
 
     async def _create(self, **kwargs) -> dict:
         db_obj: models.BaseModel = await self._crud.create(**kwargs)

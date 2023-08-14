@@ -76,7 +76,6 @@ async def patch_dish(
         service: DishesService = Depends(),
         cache_handler: CacheDishesHandler = Depends(),
 ):
-    # background_tasks.add_task(cache.cache_del_pattern, f'*:*:{dish_id}')
     background_tasks.add_task(cache_handler.delete, menu_id, submenu_id, dish_id)
     return jsonable_encoder(await service.update(menu_id, submenu_id, dish_id, dish),
                             custom_encoder=DISH_PRICE_ENCODER)

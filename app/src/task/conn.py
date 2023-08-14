@@ -5,7 +5,7 @@ from app.src.config import settings
 
 class Config:
     enable_utc = True
-    timezone = 'Europe/London'
+    timezone = 'Europe/Moscow'
     broker_url = '{}://{}:{}@{}:{}/{}'.format(
         'amqp',
         settings.RABBITMQ_DEFAULT_USER,

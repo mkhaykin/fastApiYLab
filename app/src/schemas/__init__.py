@@ -19,7 +19,8 @@ from .dish import (
 __all__ = [
     'BaseSchema', 'TBaseSchema',
     'Menu', 'GetMenu', 'GetMenuFull', 'UpdateMenuIn', 'UpdateMenuOut', 'CreateMenuIn', 'CreateMenuOut',
-    'SubMenu', 'GetSubMenu', 'GetSubMenuFull', 'UpdateSubMenuIn', 'UpdateSubMenuOut', 'CreateSubMenuIn',
-    'CreateSubMenu', 'CreateSubMenuOut',
+    'SubMenu', 'GetSubMenu', 'GetSubMenuFull',
+    'UpdateSubMenuIn', 'UpdateSubMenuOut',
+    'CreateSubMenuIn', 'CreateSubMenu', 'CreateSubMenuOut',
     'Dish', 'GetDish', 'UpdateDishIn', 'UpdateDishOut', 'CreateDishIn', 'CreateDishOut',
 ]
