@@ -1,13 +1,15 @@
 from uuid import UUID
 
+from fastapi import Depends
+
 from app.src.schemas import BaseSchema
 
-from .cache import Cache
+from .cache import Cache, get_cache
 
 
 class CacheSubMenusHandler:
-    def __init__(self):
-        self._cache = Cache()
+    def __init__(self, cache=Depends(get_cache)):
+        self._cache: Cache = cache
 
     @staticmethod
     def key(menu_id: UUID, submenu_id: UUID | None):
@@ -27,7 +29,4 @@ class CacheSubMenusHandler:
         await self._cache.delete('full:*:*')
 
     async def get(self, menu_id: UUID, submenu_id: UUID | None) -> list[BaseSchema] | None:
-        cache = await self._cache.get(self.key(menu_id, submenu_id))
-        if cache:
-            return cache
-        return None
+        return await self._cache.get(self.key(menu_id, submenu_id))

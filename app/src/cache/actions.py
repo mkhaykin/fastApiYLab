@@ -11,8 +11,7 @@ T = TypeVar('T', bound=Base)
 
 
 async def cache_reset() -> None:
-    await client.flushall(asynchronous=True)
-    return
+    return await client.flushall(asynchronous=True)
 
 
 async def key_pattern_in_cache(pattern: str) -> bool:
