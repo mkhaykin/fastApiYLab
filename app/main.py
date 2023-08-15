@@ -1,10 +1,7 @@
-import asyncio
-
 import uvicorn
 from fastapi import Depends, FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src.cache.actions import cache_reset
 from app.src.database import create_tables, get_db
 from app.src.routes.dishes import router as dishes_router
 from app.src.routes.menus import router as menu_router
@@ -17,11 +14,6 @@ app = FastAPI()
 app.include_router(menu_router)
 app.include_router(submenu_router)
 app.include_router(dishes_router)
-
-
-async def main():
-    await cache_reset()
-    uvicorn.run(app, host='0.0.0.0', port=8000)
 
 
 @app.get('/')
@@ -91,5 +83,4 @@ async def orm_query(session: AsyncSession = Depends(get_db)):
 
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    uvicorn.run(app, host='0.0.0.0', port=8000)
