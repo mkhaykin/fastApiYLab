@@ -25,15 +25,8 @@ class MenuRepository(BaseRepository):
             self,
             menu_id: UUID | None = None
     ) -> list[schemas.GetMenu]:
-        cache: list[schemas.GetMenu] | None
-        cache = await self._cache_handler.get(menu_id)
-        if cache:
-            return cache
-
         items = await self._crud.get_by_ids(menu_id)
         result = [schemas.GetMenu(**item) for item in items]
-
-        await self._cache_handler.add(menu_id, result)
         return result
 
     async def create_menu(

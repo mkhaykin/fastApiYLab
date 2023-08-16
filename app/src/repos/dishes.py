@@ -43,15 +43,8 @@ class DishesRepository(BaseRepository):
             submenu_id: UUID,
             dish_id: UUID | None = None
     ) -> list[schemas.GetDish]:
-        cache: list[schemas.GetDish] | None
-        cache = await self._cache_handler.get(menu_id, submenu_id, dish_id)
-        if cache:
-            return cache
-
         items = await self._crud.get_by_ids(menu_id, submenu_id, dish_id)
         result = [schemas.GetDish(**item) for item in items]
-
-        await self._cache_handler.add(menu_id, submenu_id, dish_id, result)
         return result
 
     async def create_dish(

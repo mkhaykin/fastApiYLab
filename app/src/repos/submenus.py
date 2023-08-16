@@ -36,15 +36,8 @@ class SubMenuRepository(BaseRepository):
             menu_id: UUID,
             submenu_id: UUID | None = None
     ) -> list[schemas.GetSubMenu]:
-        cache: list[schemas.GetSubMenu] | None
-        cache = await self._cache_handler.get(menu_id, submenu_id)
-        if cache:
-            return cache
-
         items = await self._crud.get_by_ids(menu_id, submenu_id)
         result = [schemas.GetSubMenu(**item) for item in items]
-
-        await self._cache_handler.add(menu_id, submenu_id, result)
         return result
 
     async def create_submenu(
