@@ -1,8 +1,6 @@
 from functools import wraps
 
 from fastapi import APIRouter, BackgroundTasks
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
 
 from app.src.cache import Cache
 from app.src.cache.handler import CacheHandler
@@ -27,14 +25,16 @@ def cache(func):
 
         result = await func(*args, **kwargs)
         params['data'] = result
-        background_task: BackgroundTasks = BackgroundTasks()
-        if background_task:
-            background_task.add_task(func=cache_handler.add, **params)
+
+        tasks: BackgroundTasks = kwargs.get('background_tasks', None)
+        if tasks:
+            tasks.add_task(func=cache_handler.add, **params)
         else:
             # TODO log warning
             print('cache processing is not in the background')
             await cache_handler.add(**params)
-        return JSONResponse(jsonable_encoder(result), background=background_task)
+
+        return result
 
     return wrapper
 
@@ -50,15 +50,16 @@ def invalidate_cache(func):
         }
 
         cache_handler: CacheHandler = CacheHandler(Cache())
-        background_task: BackgroundTasks = BackgroundTasks()
-        if background_task:
-            background_task.add_task(func=cache_handler.delete, **params)
+
+        tasks: BackgroundTasks = kwargs.get('background_tasks', None)
+        if tasks:
+            tasks.add_task(func=cache_handler.delete, **params)
         else:
             # TODO log warning
             print('cache processing is not in the background')
             await cache_handler.delete(**params)
 
         result = await func(*args, **kwargs)
-        return JSONResponse(jsonable_encoder(result), background=background_task)
+        return result
 
     return wrapper

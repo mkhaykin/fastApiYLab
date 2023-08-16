@@ -4,8 +4,9 @@ from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, Depends
 
 from app.src import schemas
-from app.src.cache import CacheMenusHandler, CacheSubMenusHandler
 from app.src.services import SubMenusService
+
+from .utils import cache, invalidate_cache
 
 router = APIRouter()
 
@@ -15,9 +16,11 @@ router = APIRouter()
     summary='Get all submenus from a menu',
     status_code=http.HTTPStatus.OK
 )
+@cache
 async def get_submenus(
         menu_id: UUID,
-        service: SubMenusService = Depends()
+        service: SubMenusService = Depends(),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     return await service.get_all(menu_id)
 
@@ -27,10 +30,12 @@ async def get_submenus(
     summary='Get the submenu by an id',
     status_code=http.HTTPStatus.OK
 )
+@cache
 async def get_submenu(
         menu_id: UUID,
         submenu_id: UUID,
-        service: SubMenusService = Depends()
+        service: SubMenusService = Depends(),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     return await service.get(menu_id, submenu_id)
 
@@ -42,7 +47,9 @@ async def get_submenu(
 )
 async def get_submenus_full(
         menu_id: UUID,
-        service: SubMenusService = Depends()):
+        service: SubMenusService = Depends(),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
+):
     return await service.get_full(menu_id)
 
 
@@ -51,15 +58,14 @@ async def get_submenus_full(
     summary='Create the submenu',
     status_code=http.HTTPStatus.CREATED
 )
+@invalidate_cache
 async def create_submenu(
         menu_id: UUID,
         submenu: schemas.CreateSubMenuIn,
-        background_tasks: BackgroundTasks,
         service: SubMenusService = Depends(),
-        cache_handler: CacheMenusHandler = Depends(CacheMenusHandler),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     result = await service.create(menu_id, submenu)
-    background_tasks.add_task(cache_handler.delete, menu_id)
     return result
 
 
@@ -68,16 +74,15 @@ async def create_submenu(
     summary='Update the submenu',
     status_code=http.HTTPStatus.OK
 )
+@invalidate_cache
 async def patch_submenu(
         menu_id: UUID,
         submenu_id: UUID,
         submenu: schemas.UpdateSubMenuIn,
-        background_tasks: BackgroundTasks,
         service: SubMenusService = Depends(),
-        cache_handler: CacheSubMenusHandler = Depends(CacheSubMenusHandler),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     result = await service.update(menu_id, submenu_id, submenu)
-    background_tasks.add_task(cache_handler.delete, menu_id, submenu_id)
     return result
 
 
@@ -86,13 +91,12 @@ async def patch_submenu(
     summary='Delete the submenu',
     status_code=http.HTTPStatus.OK
 )
+@invalidate_cache
 async def delete_submenu(
         menu_id: UUID,
         submenu_id: UUID,
-        background_tasks: BackgroundTasks,
         service: SubMenusService = Depends(),
-        cache_handler: CacheSubMenusHandler = Depends(CacheSubMenusHandler),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     await service.delete(menu_id, submenu_id)
-    background_tasks.add_task(cache_handler.delete, menu_id, submenu_id)
     return

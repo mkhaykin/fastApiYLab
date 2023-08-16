@@ -5,9 +5,10 @@ from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, Depends
 
 from app.src import schemas
-from app.src.cache import CacheMenusHandler
 from app.src.config import settings
 from app.src.services import MenusService, XlsMenuService
+
+from .utils import cache, invalidate_cache
 
 router = APIRouter()
 
@@ -24,8 +25,10 @@ async def read_main(service: XlsMenuService = Depends()):
     summary='Get all menus',
     status_code=http.HTTPStatus.OK
 )
+@cache
 async def get_menus(
-        service: MenusService = Depends()
+        service: MenusService = Depends(),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     return await service.get_all()
 
@@ -33,11 +36,13 @@ async def get_menus(
 @router.get(
     path='/api/v1/menus/{menu_id}',
     summary='Get one menu by an id',
-    status_code=http.HTTPStatus.OK
+    status_code=http.HTTPStatus.OK,
 )
+@cache
 async def get_menu(
         menu_id: UUID,
-        service: MenusService = Depends()
+        service: MenusService = Depends(),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     return await service.get(menu_id)
 
@@ -48,7 +53,8 @@ async def get_menu(
     status_code=http.HTTPStatus.OK
 )
 async def get_menus_full(
-        service: MenusService = Depends()
+        service: MenusService = Depends(),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     return await service.get_full()
 
@@ -58,14 +64,13 @@ async def get_menus_full(
     summary='Create the menu',
     status_code=http.HTTPStatus.CREATED
 )
+@invalidate_cache
 async def create_menu(
         menu: schemas.CreateMenuIn,
-        background_tasks: BackgroundTasks,
         service: MenusService = Depends(),
-        cache_handler: CacheMenusHandler = Depends(CacheMenusHandler),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     result = await service.create(menu)
-    background_tasks.add_task(cache_handler.delete, None)
     return result
 
 
@@ -74,15 +79,14 @@ async def create_menu(
     summary='Update the menu',
     status_code=http.HTTPStatus.OK
 )
+@invalidate_cache
 async def update_menu(
         menu_id: UUID,
         menu: schemas.UpdateMenuIn,
-        background_tasks: BackgroundTasks,
         service: MenusService = Depends(),
-        cache_handler: CacheMenusHandler = Depends(),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     result = await service.update(menu_id, menu)
-    background_tasks.add_task(cache_handler.delete, menu_id)
     return result
 
 
@@ -91,12 +95,11 @@ async def update_menu(
     summary='Delete the menu',
     status_code=http.HTTPStatus.OK
 )
+@invalidate_cache
 async def delete_menu(
         menu_id: UUID,
-        background_tasks: BackgroundTasks,
         service: MenusService = Depends(),
-        cache_handler: CacheMenusHandler = Depends(CacheMenusHandler),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     await service.delete(menu_id)
-    background_tasks.add_task(cache_handler.delete, menu_id)
     return
