@@ -51,6 +51,11 @@ async def patch_menu(client: AsyncClient, menu_id: str, title: str, description:
     })
 
 
+async def delete_menu(client: AsyncClient, menu_id: str):
+    response = await client.delete(f'/api/v1/menus/{menu_id}')
+    assert response.status_code == 200
+
+
 async def check_menu_eq_menu(client: AsyncClient, menu: dict):
     data = await get_menu(client, menu['id'])
     assert compare_response(data, menu)

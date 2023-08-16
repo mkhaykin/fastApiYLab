@@ -71,6 +71,19 @@ async def patch_dish(
     })
 
 
+async def delete_dish(
+        client: AsyncClient,
+        menu_id: str,
+        submenu_id: str,
+        dish_id: str,
+):
+    # delete
+    response = await client.delete(
+        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
+    )
+    assert response.status_code == 200
+
+
 async def check_dish_eq_dish(client: AsyncClient, menu_id: str, dish: dict):
     data = await get_dish(client, menu_id, dish['submenu_id'], dish['id'])
     assert compare_response(answer=data, standard=dish)

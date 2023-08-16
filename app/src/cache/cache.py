@@ -1,11 +1,13 @@
 import pickle
 from uuid import UUID
 
+import aioredis
 from aioredis.client import Redis
 
 from app.src import schemas
+from app.src.config import settings
 
-from .conn import client
+REDIS_URL: str = f'redis://{settings.REDIS_SERVER}:{settings.REDIS_PORT}'
 
 
 class Cache:
@@ -17,12 +19,12 @@ class Cache:
         return cls.__instance
 
     def __init__(self):
-        self.client: Redis = client
+        self.client: Redis = aioredis.from_url(REDIS_URL)
 
     async def reset(self) -> None:
         await self.client.flushall(asynchronous=True)
 
-    async def set(self, key: UUID | str, data: list[schemas.TBaseSchema]) -> None:
+    async def set(self, key: UUID | str, data: list[schemas.TBaseSchema] | schemas.TBaseSchema | None) -> None:
         byte_data = pickle.dumps(data)
         await self.client.set(str(key), byte_data, ex=30)
         return

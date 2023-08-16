@@ -57,6 +57,11 @@ async def patch_submenu(
     })
 
 
+async def delete_submenu(client: AsyncClient, menu_id: str, submenu_id: str):
+    response = await client.delete(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}')
+    assert response.status_code == 200
+
+
 async def check_submenu_eq_submenu(client: AsyncClient, submenu: dict):
     data = await get_submenu(client, submenu['menu_id'], submenu['id'])
     assert compare_response(data, submenu)

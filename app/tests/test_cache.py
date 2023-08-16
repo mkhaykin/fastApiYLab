@@ -2,9 +2,10 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src.cache.actions import key_in_cache, key_pattern_in_cache
 from app.tests.utils import random_word
 from app.tests.utils_menu import create_menu, patch_menu
+
+from .utils_cache import key_in_cache, key_pattern_in_cache
 
 
 @pytest.mark.asyncio

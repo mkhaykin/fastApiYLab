@@ -8,7 +8,6 @@ from httpx import AsyncClient
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from app.main import app
-from app.src.cache.actions import cache_reset
 from app.src.database import get_db
 from app.src.models import Dishes, Menus, SubMenus
 from app.tests.database import (
@@ -19,6 +18,9 @@ from app.tests.database import (
     engine_test_async,
     override_get_db,
 )
+
+# from app.src.cache.actions import cache_reset
+from .utils_cache import cache_reset
 
 
 @pytest_asyncio.fixture(scope='module')
