@@ -65,8 +65,13 @@ class DishesRepository(BaseRepository):
         return schemas.CreateDishOut(
             **await self._create(**{'submenu_id': submenu_id, **dish.model_dump(), 'id': obj_id}))
 
-    async def update_dish(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID,
-                          dish: schemas.UpdateDishIn) -> schemas.UpdateDishOut:
+    async def update_dish(
+            self,
+            menu_id: UUID,
+            submenu_id: UUID,
+            dish_id: UUID,
+            dish: schemas.UpdateDishIn
+    ) -> schemas.UpdateDishOut:
         await self.check(menu_id, submenu_id)
         return schemas.UpdateDishOut(**await self._update(dish_id, **dish.model_dump()))
 
