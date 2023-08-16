@@ -297,7 +297,6 @@ async def test_update_dish_and_check(db_create_submenus: AsyncSession, client: A
     title = random_word(13)
     description = random_word(20)
     await patch_dish(client, menu_id, submenu_id, dish_id, title, description, price)
-
     answer = {
         'id': dish_id,
         'submenu_id': submenu_id,
@@ -305,10 +304,8 @@ async def test_update_dish_and_check(db_create_submenus: AsyncSession, client: A
         'description': description,
         'price': price,
     }
-
     # get dish by id
     await check_dish_eq_dish(client, menu_id, answer)
-
     # get all dish
     await check_dish_in_dishes(client, menu_id, answer)
 

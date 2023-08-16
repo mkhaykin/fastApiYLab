@@ -1,10 +1,14 @@
 from httpx import AsyncClient
 
 from .utils import compare_response, round_price
+from .utils_cache import key_pattern_in_cache
 
 
 async def get_dish(
-        client: AsyncClient, menu_id: str, submenu_id: str, dish_id: str
+        client: AsyncClient,
+        menu_id: str,
+        submenu_id: str,
+        dish_id: str,
 ) -> dict:
     response = await client.get(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
@@ -84,12 +88,20 @@ async def delete_dish(
     assert response.status_code == 200
 
 
-async def check_dish_eq_dish(client: AsyncClient, menu_id: str, dish: dict):
+async def check_dish_eq_dish(
+        client: AsyncClient,
+        menu_id: str,
+        dish: dict,
+):
     data = await get_dish(client, menu_id, dish['submenu_id'], dish['id'])
     assert compare_response(answer=data, standard=dish)
 
 
-async def check_dish_in_dishes(client: AsyncClient, menu_id: str, dish: dict):
+async def check_dish_in_dishes(
+        client: AsyncClient,
+        menu_id: str,
+        dish: dict,
+):
     response = await client.get(f"/api/v1/menus/{menu_id}/submenus/{dish['submenu_id']}/dishes")
     assert response.status_code == 200
     assert response.json() and any(
@@ -101,7 +113,10 @@ async def check_dish_in_dishes(client: AsyncClient, menu_id: str, dish: dict):
 
 
 async def check_dish_not_in_dishes(
-        client: AsyncClient, menu_id: str, submenu_id: str, dish_id: str
+        client: AsyncClient,
+        menu_id: str,
+        submenu_id: str,
+        dish_id: str,
 ):
     response = await client.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes')
     assert response.status_code == 200
@@ -111,3 +126,18 @@ async def check_dish_not_in_dishes(
             response.json(),
         )
     )
+
+
+async def dish_in_cache(
+        menu_id: str,
+        submenu_id: str,
+        dish_id: str,
+):
+    return await key_pattern_in_cache(f'*:{menu_id}:{submenu_id}:{dish_id}')
+
+
+async def dishes_in_cache(
+        menu_id: str,
+        submenu_id: str,
+):
+    return await key_pattern_in_cache(f'*:{menu_id}:{submenu_id}:None')

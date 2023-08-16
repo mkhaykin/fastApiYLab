@@ -1,9 +1,27 @@
 from httpx import AsyncClient
 
 from .utils import compare_response
+from .utils_cache import key_pattern_in_cache
 
 
-async def get_menu(client: AsyncClient, menu_id: str) -> dict:
+async def get_menus(
+        client: AsyncClient
+) -> dict | None:
+    response = await client.get('/api/v1/menus')
+    assert response.status_code == 200
+    for item in response.json():
+        assert 'id' in item
+        assert 'title' in item
+        assert 'description' in item
+        assert 'submenus_count' in item
+        assert 'dishes_count' in item
+    return response.json()
+
+
+async def get_menu(
+        client: AsyncClient,
+        menu_id: str
+) -> dict:
     response = await client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
     assert 'id' in response.json()
@@ -14,7 +32,11 @@ async def get_menu(client: AsyncClient, menu_id: str) -> dict:
     return response.json()
 
 
-async def create_menu(client: AsyncClient, title: str, description: str) -> str:
+async def create_menu(
+        client: AsyncClient,
+        title: str,
+        description: str
+) -> str:
     response = await client.post(
         '/api/v1/menus',
         json={
@@ -34,7 +56,12 @@ async def create_menu(client: AsyncClient, title: str, description: str) -> str:
     return menu_id
 
 
-async def patch_menu(client: AsyncClient, menu_id: str, title: str, description: str):
+async def patch_menu(
+        client: AsyncClient,
+        menu_id: str,
+        title: str,
+        description: str,
+):
     response = await client.patch(
         f'/api/v1/menus/{menu_id}',
         json={
@@ -51,17 +78,26 @@ async def patch_menu(client: AsyncClient, menu_id: str, title: str, description:
     })
 
 
-async def delete_menu(client: AsyncClient, menu_id: str):
+async def delete_menu(
+        client: AsyncClient,
+        menu_id: str,
+):
     response = await client.delete(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
 
-async def check_menu_eq_menu(client: AsyncClient, menu: dict):
+async def check_menu_eq_menu(
+        client: AsyncClient,
+        menu: dict,
+):
     data = await get_menu(client, menu['id'])
     assert compare_response(data, menu)
 
 
-async def check_menu_in_menus(client: AsyncClient, menu: dict):
+async def check_menu_in_menus(
+        client: AsyncClient,
+        menu: dict,
+):
     response = await client.get('/api/v1/menus')
     assert response.status_code == 200
     assert response.json() and any(
@@ -72,7 +108,10 @@ async def check_menu_in_menus(client: AsyncClient, menu: dict):
     )
 
 
-async def check_menu_not_in_menus(client: AsyncClient, menu_id: str):
+async def check_menu_not_in_menus(
+        client: AsyncClient,
+        menu_id: str,
+):
     response = await client.get('/api/v1/menus')
 
     assert response.status_code == 200
@@ -82,3 +121,13 @@ async def check_menu_not_in_menus(client: AsyncClient, menu_id: str):
             response.json(),
         )
     )
+
+
+async def menu_in_cache(
+        menu_id: str
+):
+    return await key_pattern_in_cache(f'*:{menu_id}:None:None')
+
+
+async def menus_in_cache():
+    return await key_pattern_in_cache('*:None:None:None')

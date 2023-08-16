@@ -14,7 +14,9 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .utils_cache import key_pattern_in_cache
+from .utils_dish import dish_in_cache
+from .utils_menu import menu_in_cache
+from .utils_submenu import submenu_in_cache
 
 
 @pytest.mark.asyncio
@@ -39,6 +41,6 @@ async def test_cache_submenu_cascade_drop_after_drop(db_create_dishes: AsyncSess
     response = await async_client.delete(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    assert not (await key_pattern_in_cache(f'{menu_id}:*:*'))
-    assert not (await key_pattern_in_cache(f'*:{submenu_id}:*'))
-    assert not (await key_pattern_in_cache(f'*:*:{dish_id}'))
+    assert not (await menu_in_cache(menu_id))
+    assert not (await submenu_in_cache(menu_id, submenu_id))
+    assert not (await dish_in_cache(menu_id, submenu_id, dish_id))

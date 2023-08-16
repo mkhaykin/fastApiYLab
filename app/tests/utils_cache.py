@@ -27,3 +27,7 @@ async def key_pattern_in_cache(pattern: str) -> bool:
 
 async def key_in_cache(key: str) -> bool:
     return await client.exists(key)
+
+
+async def keys_in_cache() -> list[str]:
+    return [str(key) for key in (await client.keys('*'))]

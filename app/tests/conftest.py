@@ -71,14 +71,6 @@ def event_loop():
     loop.close()
 
 
-# @pytest_asyncio.fixture(scope='module')
-# async def db_test() -> AsyncGenerator:
-#     app.dependency_overrides[get_db] = override_get_db
-#     await drop_tables_async()
-#     await create_tables_async()
-#     yield
-
-
 @pytest_asyncio.fixture  # (scope='module')
 async def client() -> AsyncClient:
     async with LifespanManager(app):

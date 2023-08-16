@@ -16,7 +16,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.tests.utils import random_word
 
-from .utils_cache import key_pattern_in_cache
+from .utils_menu import menu_in_cache
+from .utils_submenu import submenu_in_cache
 
 
 @pytest.mark.asyncio
@@ -46,24 +47,25 @@ async def test_dishes_count(db_create_dishes: AsyncSession, async_client: AsyncC
     dish_id = response.json()['id']
 
     # Кэша нет, т.к. создание блюда должно сбросить кеш и меню и подменю
-    assert not (await key_pattern_in_cache(f'{menu_id}:*:*'))
-    assert not (await key_pattern_in_cache(f'*:{submenu_id}:*'))
+    assert not (await menu_in_cache(menu_id))
+    assert not (await submenu_in_cache(menu_id, submenu_id))
 
     # Кладем в кеш меню
     response = await async_client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
     # Проверяем что есть
-    assert (await key_pattern_in_cache(f'{menu_id}:*:*'))
+    assert (await menu_in_cache(menu_id))
 
     # delete dish
     response = await async_client.delete(
         f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
     )
     assert response.status_code == 200
-    assert not (await key_pattern_in_cache(f'{menu_id}:*:*'))
-    assert not (await key_pattern_in_cache(f'*:{submenu_id}:*'))
+
+    assert not (await menu_in_cache(menu_id))
+    assert not (await submenu_in_cache(menu_id, submenu_id))
 
     response = await async_client.get(f'/api/v1/menus/{menu_id}')
     assert response.status_code == 200
 
-    assert (await key_pattern_in_cache(f'{menu_id}:None:None'))
+    assert (await menu_in_cache(menu_id))
