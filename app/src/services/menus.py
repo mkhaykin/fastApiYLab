@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 
 from app.src import schemas
 from app.src.repos import MenuRepository
@@ -30,9 +30,10 @@ class MenusService(BaseService):
 
     async def get(self, menu_id: UUID) -> schemas.GetMenu | None:
         result = await self.repo.get_by_ids(menu_id)
-        if len(result) == 0:
-            raise HTTPException(404, 'menu not found')
-        return result[0]  # TODO check if more one
+        # if len(result) == 0:
+        #     raise HTTPException(404, 'menu not found')
+        # return result[0]  # TODO check if more one
+        return self.get_one(result, 'menu not found')
 
     async def create(self, menu: schemas.CreateMenuIn) -> schemas.CreateMenuOut:
         return await self.repo.create_menu(menu)

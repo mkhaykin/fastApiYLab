@@ -1,10 +1,8 @@
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 
 from app.src import schemas
-
-# from app.src.cache.actions import cache_del
 from app.src.repos import DishesRepository
 
 from .base import BaseService
@@ -32,9 +30,10 @@ class DishesService(BaseService):
     ) -> schemas.GetDish | None:
         await self.repo.check(menu_id, submenu_id)
         result = await self.repo.get_by_ids(menu_id, submenu_id, dish_id)
-        if len(result) == 0:
-            raise HTTPException(404, 'dish not found')
-        return result[0]  # TODO check if more one
+        # if len(result) == 0:
+        #     raise HTTPException(404, 'dish not found')
+        # return result[0]  # TODO check if more one
+        return self.get_one(result, 'dish not found')
 
     async def create(
             self,
