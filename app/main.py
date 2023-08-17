@@ -17,7 +17,7 @@ app.include_router(dishes_router)
 
 
 @app.get('/')
-async def read_main():
+async def hello():
     return {'msg': 'Hello World'}
 
 
