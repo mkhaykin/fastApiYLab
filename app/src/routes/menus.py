@@ -87,8 +87,7 @@ async def create_menu(
         service: MenusService = Depends(),
         background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
-    result = await service.create(menu)
-    return result
+    return await service.create(menu)
 
 
 @router.patch(
@@ -108,8 +107,7 @@ async def update_menu(
         service: MenusService = Depends(),
         background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
-    result = await service.update(menu_id, menu)
-    return result
+    return await service.update(menu_id, menu)
 
 
 @router.delete(
