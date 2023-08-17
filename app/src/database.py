@@ -43,8 +43,10 @@ engine_async = create_async_engine(
 )
 
 
-async_session = sessionmaker(
-    bind=engine_async, class_=AsyncSession, expire_on_commit=False
+async_session = sessionmaker(  # type: ignore
+    bind=engine_async,
+    class_=AsyncSession,
+    expire_on_commit=False
 )
 
 
