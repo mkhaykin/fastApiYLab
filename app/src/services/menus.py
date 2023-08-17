@@ -37,8 +37,8 @@ class MenusService(BaseService):
     async def create(self, menu: schemas.CreateMenuIn) -> schemas.CreateMenuOut:
         return await self.repo.create_menu(menu)
 
-    async def update(self, menu_id: UUID, menu: schemas.UpdateMenuIn) -> schemas.UpdateMenuIn:
+    async def update(self, menu_id: UUID, menu: schemas.UpdateMenuIn) -> schemas.UpdateMenuOut:
         return await self.repo.update_menu(menu_id, menu)
 
-    async def delete(self, menu_id: UUID) -> None:
-        return await self.repo.delete_menu(menu_id)
+    async def delete(self, menu_id: UUID) -> schemas.MessageMenuDeleted:
+        return schemas.MessageMenuDeleted()
