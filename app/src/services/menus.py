@@ -41,4 +41,5 @@ class MenusService(BaseService):
         return await self.repo.update_menu(menu_id, menu)
 
     async def delete(self, menu_id: UUID) -> schemas.MessageMenuDeleted:
+        await self.repo.delete_menu(menu_id)
         return schemas.MessageMenuDeleted()

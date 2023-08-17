@@ -59,12 +59,13 @@ class SubMenusService(BaseService):
             menu_id: UUID,
             submenu_id: UUID,
             submenu: schemas.UpdateSubMenuIn
-    ) -> schemas.UpdateSubMenuIn:
+    ) -> schemas.UpdateSubMenuOut:
         return await self.repo.update_submenu(menu_id, submenu_id, submenu)
 
     async def delete(
             self,
             menu_id: UUID,
             submenu_id: UUID
-    ) -> None:
-        return await self.repo.delete_submenu(menu_id, submenu_id)
+    ) -> schemas.MessageMenuDeleted:
+        await self.repo.delete_submenu(menu_id, submenu_id)
+        return schemas.MessageMenuDeleted()

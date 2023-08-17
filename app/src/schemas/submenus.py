@@ -1,37 +1,31 @@
 from uuid import UUID
 
+from pydantic import Field
+
 from .base import BaseSchema
 from .dish import GetDish
 
 
 class BaseSubMenu(BaseSchema):
-    title: str
-    description: str | None
-    model_config = {
-        'json_schema_extra': {
-            'examples': [
-                {
-                    'title': 'Submenu 1 title',
-                    'description': 'Submenu 1 description',
-                }
-            ]
-        }
-    }
+    title: str = Field(examples=['Холодные закуски', 'К пиву'])
+    description: str | None = Field(examples=['Рамен', 'Горячий рамен'])
 
 
-class GetSubMenu(BaseSubMenu):
+class _BaseSubMenuID(BaseSubMenu):
     id: UUID
     menu_id: UUID
-    dishes_count: int
+
+
+class _BaseSubMenuCount(BaseSubMenu):
+    dishes_count: int = Field(examples=[6])
+
+
+class GetSubMenu(_BaseSubMenuID, _BaseSubMenuCount):
     pass
 
 
-class GetSubMenuFull(BaseSubMenu):
-    id: UUID
-    menu_id: UUID
-    dishes_count: int
-    dishes: list[GetDish] | None
-    pass
+class GetSubMenuFull(_BaseSubMenuID, _BaseSubMenuCount):
+    dishes: list[GetDish]
 
 
 class CreateSubMenuIn(BaseSubMenu):
@@ -42,31 +36,29 @@ class CreateSubMenu(CreateSubMenuIn):
     menu_id: UUID
 
 
-class CreateSubMenuOut(CreateSubMenu):
-    id: UUID
+class CreateSubMenuOut(_BaseSubMenuID):
+    pass
 
 
 class UpdateSubMenuIn(BaseSubMenu):
     pass
 
 
-class UpdateSubMenuOut(UpdateSubMenuIn):
-    id: UUID
-    menu_id: UUID
+class UpdateSubMenuOut(_BaseSubMenuID):
+    pass
 
 
 class SubMenu(GetSubMenu):
-    # model_config = {
-    #     'json_schema_extra': {
-    #         'examples': [
-    #             {
-    #                 'id': '3e5864f3-ddf0-4be8-b563-a9151e9ee85e',
-    #                 'menu_id': '325523fe-17a5-4f46-bb0a-3cf6d397a182',
-    #                 'title': 'Submenu 1 title',
-    #                 'description': 'Submenu 1 description',
-    #                 'dishes_count': 5,
-    #             }
-    #         ]
-    #     }
-    # }
     pass
+
+
+class MessageSubMenuNotFound(BaseSchema):
+    detail: str = 'submenu not found'
+
+
+class MessageSubMenuDuplicated(BaseSchema):
+    detail: str = 'the submenu is duplicated'
+
+
+class MessageSubMenuDeleted(BaseSchema):
+    detail: str = 'the submenu is deleted'

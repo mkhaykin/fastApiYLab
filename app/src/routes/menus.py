@@ -58,7 +58,7 @@ async def get_menu(
 
 
 @router.get(
-    path='/api/v1/menus/full',
+    path='/api/v1/full',
     summary='Get all menus with linked elements',
     status_code=http.HTTPStatus.OK,
     response_model=list[schemas.GetMenuFull],

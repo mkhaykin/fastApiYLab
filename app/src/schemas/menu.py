@@ -25,7 +25,7 @@ class GetMenu(_BaseMenuID, _BaseMenuCount):
 
 
 class GetMenuFull(_BaseMenuID, _BaseMenuCount):
-    submenus: list[GetSubMenuFull | None] = Field(description='list of linked submenus')
+    submenus: list[GetSubMenuFull] = Field(description='list of linked submenus')
 
 
 class CreateMenuIn(BaseMenu):
