@@ -2,10 +2,6 @@ import asyncio
 import os
 
 from app.src import crud
-
-# from app.src.cache.dishes import CacheDishesHandler
-# from app.src.cache.menus import CacheMenusHandler
-# from app.src.cache.submenus import CacheSubMenusHandler
 from app.src.config import settings
 from app.src.database import AsyncSession, async_session, ping_db
 from app.src.repos import DishesRepository, MenuRepository, SubMenuRepository
@@ -46,4 +42,4 @@ def xls_load():
 @app_celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     # Calls xls_load every 15 seconds.
-    sender.add_periodic_task(15.0, xls_load.s(), name='sync file admin/Menu.xlsx every 15')
+    sender.add_periodic_task(15.0, xls_load.s(), name='sync file admin/Menu.xlsx every 15 sec')
