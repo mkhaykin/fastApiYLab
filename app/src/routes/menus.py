@@ -126,5 +126,4 @@ async def delete_menu(
         service: MenusService = Depends(),
         background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
-    await service.delete(menu_id)
-    return
+    return await service.delete(menu_id)
