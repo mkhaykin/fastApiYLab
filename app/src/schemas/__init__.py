@@ -1,6 +1,7 @@
 from .base import BaseSchema, TBaseSchema
 from .menu import (
-    Menu, GetMenu, GetMenuFull,
+    MessageMenuNotFound, MessageMenuLoad, MessageMenuDuplicated, MessageMenuDeleted,
+    GetMenu, GetMenuFull,
     UpdateMenuIn, UpdateMenuOut,
     CreateMenuIn, CreateMenuOut,
 )
@@ -18,9 +19,16 @@ from .dish import (
 
 __all__ = [
     'BaseSchema', 'TBaseSchema',
-    'Menu', 'GetMenu', 'GetMenuFull', 'UpdateMenuIn', 'UpdateMenuOut', 'CreateMenuIn', 'CreateMenuOut',
-    'SubMenu', 'GetSubMenu', 'GetSubMenuFull',
+    # menus
+    'MessageMenuNotFound', 'MessageMenuLoad',
+    'GetMenu', 'GetMenuFull',
+    'CreateMenuIn', 'CreateMenuOut',
+    'UpdateMenuIn', 'UpdateMenuOut',
+    # submenus
+    'SubMenu',
+    'GetSubMenu', 'GetSubMenuFull',
     'UpdateSubMenuIn', 'UpdateSubMenuOut',
     'CreateSubMenuIn', 'CreateSubMenu', 'CreateSubMenuOut',
+    # dishes
     'Dish', 'GetDish', 'UpdateDishIn', 'UpdateDishOut', 'CreateDishIn', 'CreateDishOut',
 ]
