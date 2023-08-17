@@ -3,7 +3,6 @@ from uuid import UUID
 from fastapi import Depends, HTTPException
 
 from app.src import schemas
-from app.src.cache import CacheDishesHandler
 from app.src.crud import DishesCRUD
 
 from .base import BaseRepository
@@ -18,12 +17,10 @@ class DishesRepository(BaseRepository):
     def __init__(
             self,
             crud: DishesCRUD = Depends(),
-            cache_handler: CacheDishesHandler = Depends(),
             menu_repo: MenuRepository = Depends(),
             submenu_repo: SubMenuRepository = Depends(),
     ):
         super().__init__(crud)
-        self._cache_handler = cache_handler
         self._menu_repo = menu_repo
         self._submenu_repo = submenu_repo
 

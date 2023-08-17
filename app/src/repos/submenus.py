@@ -3,7 +3,6 @@ from uuid import UUID
 from fastapi import Depends, HTTPException
 
 from app.src import schemas
-from app.src.cache import CacheSubMenusHandler
 from app.src.crud import SubMenusCRUD
 
 from .base import BaseRepository
@@ -17,11 +16,9 @@ class SubMenuRepository(BaseRepository):
     def __init__(
             self,
             crud: SubMenusCRUD = Depends(),
-            cache_handler: CacheSubMenusHandler = Depends(),
             menu_repo: MenuRepository = Depends(),
     ):
         super().__init__(crud)
-        self._cache_handler = cache_handler
         self._menu_repo = menu_repo
 
     async def check(
