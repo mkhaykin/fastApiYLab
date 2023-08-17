@@ -30,9 +30,6 @@ class DishesService(BaseService):
     ) -> schemas.GetDish | None:
         await self.repo.check(menu_id, submenu_id)
         result = await self.repo.get_by_ids(menu_id, submenu_id, dish_id)
-        # if len(result) == 0:
-        #     raise HTTPException(404, 'dish not found')
-        # return result[0]  # TODO check if more one
         return self.get_one(result, 'dish not found')
 
     async def create(

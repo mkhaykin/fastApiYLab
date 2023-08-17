@@ -43,9 +43,6 @@ class SubMenusService(BaseService):
             submenu_id: UUID
     ) -> schemas.GetSubMenu | None:
         result = await self.repo.get_by_ids(menu_id, submenu_id)
-        # if len(result) == 0:
-        #     raise HTTPException(404, 'submenu not found')
-        # return result[0]  # TODO check if more one
         return self.get_one(result, 'submenu not found')
 
     async def create(
