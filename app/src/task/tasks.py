@@ -6,7 +6,7 @@ from app.src.cache.dishes import CacheDishesHandler
 from app.src.cache.menus import CacheMenusHandler
 from app.src.cache.submenus import CacheSubMenusHandler
 from app.src.config import settings
-from app.src.database import get_db
+from app.src.database import AsyncSession, async_session, ping_db
 from app.src.repos import DishesRepository, MenuRepository, SubMenuRepository
 from app.src.services.xls_menu import XlsMenuService
 
@@ -14,7 +14,11 @@ from .conn import app_celery
 
 
 async def async_xls_load():
-    session = await anext(get_db())
+    session: AsyncSession = async_session()
+    if not (await ping_db(session)):
+        print("can't load data")    # TODO write to log
+        return
+
     filename: str = os.path.join(settings.PATH_TO_STORE, 'Menu.xlsx')
     cache_menu_handler = CacheMenusHandler()
     crud_menu = crud.MenusCRUD(session)
@@ -32,6 +36,7 @@ async def async_xls_load():
         repo_submenus=repo_submenus,
         repo_dishes=repo_dishes)
         .load_from_file(filename))
+    await session.close()
 
 
 @app_celery.task

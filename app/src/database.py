@@ -1,5 +1,6 @@
 from typing import AsyncGenerator
 
+from sqlalchemy import select, text
 from sqlalchemy.engine import URL, create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -45,6 +46,16 @@ engine_async = create_async_engine(
 async_session = sessionmaker(
     bind=engine_async, class_=AsyncSession, expire_on_commit=False
 )
+
+
+async def ping_db(session: AsyncSession) -> bool:
+    try:
+        await session.execute(select(text('1')))
+    except Exception as e:
+        print(e)    # TODO write to log
+        return False
+
+    return True
 
 
 async def get_db() -> AsyncGenerator:
