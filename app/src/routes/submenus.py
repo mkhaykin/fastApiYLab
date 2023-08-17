@@ -15,7 +15,6 @@ router = APIRouter()
     path='/api/v1/menus/{menu_id}/submenus',
     summary='Get all submenus from a menu',
     status_code=http.HTTPStatus.OK,
-    responses={404: {'model': schemas.MessageMenuNotFound, 'description': 'The menu was not found'}, },
     response_model=list[schemas.GetSubMenu],
     response_description='Return all menus',
 )
