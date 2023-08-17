@@ -14,9 +14,11 @@ from .submenus import (
     CreateSubMenuIn, CreateSubMenu, CreateSubMenuOut,
 )
 from .dish import (
-    Dish, GetDish,
+    Dish,
+    MessageDishNotFound, MessageDishDuplicated, MessageDishDeleted,
+    GetDish,
     UpdateDishIn, UpdateDishOut,
-    CreateDishIn, CreateDishOut,
+    CreateDishIn, CreateDish, CreateDishOut,
 )
 
 __all__ = [
@@ -34,5 +36,9 @@ __all__ = [
     'UpdateSubMenuIn', 'UpdateSubMenuOut',
     'CreateSubMenuIn', 'CreateSubMenu', 'CreateSubMenuOut',
     # dishes
-    'Dish', 'GetDish', 'UpdateDishIn', 'UpdateDishOut', 'CreateDishIn', 'CreateDishOut',
+    'MessageDishNotFound', 'MessageDishDuplicated', 'MessageDishDeleted',
+    'Dish',
+    'GetDish',
+    'UpdateDishIn', 'UpdateDishOut',
+    'CreateDishIn', 'CreateDish', 'CreateDishOut',
 ]

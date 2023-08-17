@@ -52,7 +52,7 @@ class DishesService(BaseService):
             submenu_id: UUID,
             dish_id: UUID,
             submenu: schemas.UpdateDishIn
-    ) -> schemas.UpdateDishIn:
+    ) -> schemas.UpdateDishOut:
         await self.repo.check(menu_id, submenu_id)
         return await self.repo.update_dish(menu_id, submenu_id, dish_id, submenu)
 
@@ -61,6 +61,7 @@ class DishesService(BaseService):
             menu_id: UUID,
             submenu_id: UUID,
             dish_id: UUID
-    ) -> None:
+    ) -> schemas.MessageDishDeleted:
         await self.repo.check(menu_id, submenu_id)
         await self.repo.delete_dish(menu_id, submenu_id, dish_id)
+        return schemas.MessageDishDeleted()
