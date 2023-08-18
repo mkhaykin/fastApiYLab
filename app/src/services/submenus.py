@@ -42,6 +42,7 @@ class SubMenusService(BaseService):
             menu_id: UUID,
             submenu_id: UUID
     ) -> schemas.GetSubMenu | None:
+        await self.repo.check(menu_id)
         result = await self.repo.get_by_ids(menu_id, submenu_id)
         return self.get_one(result, 'submenu not found')
 
