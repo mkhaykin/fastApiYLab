@@ -2,20 +2,17 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.tests.utils import random_word
-from app.tests.utils_menu import create_menu, menu_in_cache, patch_menu
+from app.tests.test_utils import random_word
+from app.tests.test_utils_menu import create_menu, menu_in_cache, patch_menu
 
 
 @pytest.mark.asyncio
 async def test_repeat_404(async_db: AsyncSession, async_client: AsyncClient):
     # повторяемость (не кешируем объект при его отсутствии)
-    response = await async_client.get('/api/v1/menus/99999999-0000-0000-0000-000000000000')
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'menu not found'}
-
-    response = await async_client.get('/api/v1/menus/99999999-0000-0000-0000-000000000000')
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'menu not found'}
+    for _ in '12':
+        response = await async_client.get('/api/v1/menus/99999999-0000-0000-0000-000000000000')
+        assert response.status_code == 404
+        assert response.json() == {'detail': 'menu not found'}
 
 
 @pytest.mark.asyncio

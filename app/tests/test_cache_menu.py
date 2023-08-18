@@ -2,10 +2,9 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 
-from app.tests.utils import random_word
-
-from .utils_cache import cache_reset
-from .utils_menu import (
+from app.tests.test_utils import random_word
+from app.tests.test_utils_cache import cache_reset
+from app.tests.test_utils_menu import (
     create_menu,
     delete_menu,
     get_menu,

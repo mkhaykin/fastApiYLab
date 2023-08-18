@@ -1,274 +1,243 @@
-"""
-    на момент теста у нас 2 записи по меню и 3 записи submenu
-    00000000-0001-0000-0000-000000000000
-        00000000-0000-0001-0000-000000000000
-        00000000-0000-0002-0000-000000000001
-    00000000-0002-0000-0000-000000000001
-        00000000-0000-0003-0000-000000000002
-"""
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.tests.utils import random_word, round_price
-from app.tests.utils_dish import (
+from app.tests.test_data import (
+    DISH1,
+    DISH2,
+    DISH3,
+    DISH_ID111,
+    DISH_ID123,
+    DISH_ID_WRONG,
+    MENU_ID1,
+    MENU_ID2,
+    MENU_ID_WRONG,
+    SUBMENU_ID11,
+    SUBMENU_ID12,
+    SUBMENU_ID23,
+    SUBMENU_ID_WRONG,
+)
+from app.tests.test_utils import dict_in_list, random_word, round_price
+from app.tests.test_utils_dish import (
     check_dish_eq_dish,
     check_dish_in_dishes,
+    check_dish_not_exists,
     check_dish_not_in_dishes,
     create_dish,
+    delete_dish,
+    get_dish,
+    get_dishes,
     patch_dish,
 )
 
 
 @pytest.mark.asyncio
-async def test_menu_exist(db_create_submenus: AsyncSession, client: AsyncClient):
-    # проверка фикстуры
-    response = await client.get('/api/v1/menus/00000000-0001-0000-0000-000000000000')
-    assert response.status_code == 200
-    response = await client.get('/api/v1/menus/00000000-0002-0000-0000-000000000000')
-    assert response.status_code == 200
+async def test_dishes(db_test_data: AsyncSession, async_client: AsyncClient):
+    data = await get_dishes(async_client, MENU_ID1, SUBMENU_ID11)
+    assert len(data) == 2
+    dict_in_list(DISH1, data)
+    dict_in_list(DISH2, data)
+
+    data = await get_dishes(async_client, MENU_ID1, SUBMENU_ID12)
+    assert len(data) == 1
+    dict_in_list(DISH3, data)
 
 
 @pytest.mark.asyncio
-async def test_submenu_exist(db_create_submenus: AsyncSession, client: AsyncClient):
-    # проверка фикстуры
-    response = await client.get(
-        '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
-        'submenus/00000000-0000-0001-0000-000000000000'
-    )
-    assert response.status_code == 200
-    response = await client.get(
-        '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
-        'submenus/00000000-0000-0002-0000-000000000000'
-    )
-    assert response.status_code == 200
-    response = await client.get(
-        '/api/v1/menus/00000000-0002-0000-0000-000000000000/'
-        'submenus/00000000-0000-0003-0000-000000000000'
-    )
-    assert response.status_code == 200
+async def test_dish(db_test_data: AsyncSession, async_client: AsyncClient):
+    data = await get_dish(async_client, MENU_ID1, SUBMENU_ID11, DISH_ID111)
+    await check_dish_eq_dish(async_client, MENU_ID1, data)
 
 
 @pytest.mark.asyncio
-async def test_dishes(db_create_submenus: AsyncSession, client: AsyncClient):
-    response = await client.get(
-        '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
-        'submenus/00000000-0000-0001-0000-000000000000/dishes'
-    )
-    assert response.status_code == 200
-    # assert not response.json()
+async def test_dish_menu_not_exists(db_test_data: AsyncSession, async_client: AsyncClient):
+    data = await get_dish(async_client, MENU_ID_WRONG, SUBMENU_ID11, DISH_ID111, waited_code=404)
+    assert data == {'detail': 'menu not found'}
 
 
 @pytest.mark.asyncio
-async def test_dish_not_found(db_create_submenus: AsyncSession, client: AsyncClient):
-    response = await client.get(
-        '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
-        'submenus/00000000-0000-0001-0000-000000000000/'
-        'dishes/00000000-0000-0000-9999-000000000000'
-    )
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'dish not found'}
+async def test_dish_submenu_not_exists(db_test_data: AsyncSession, async_client: AsyncClient):
+    data = await get_dish(async_client, MENU_ID1, SUBMENU_ID_WRONG, DISH_ID111, waited_code=404)
+    assert data == {'detail': 'submenu not found'}
 
 
 @pytest.mark.asyncio
-async def test_dish_not_found_wrong_submenu(db_create_submenus: AsyncSession, client: AsyncClient):
-    response = await client.get(
-        '/api/v1/menus/00000000-0001-0000-0000-000000000000/'
-        'submenus/00000002-0000-0000-0000-000000000000/'
-        'dishes/00000000-0000-0000-0001-000000000000'
-    )
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'submenu not found'}
+async def test_dish_dish_not_exists(db_test_data: AsyncSession, async_client: AsyncClient):
+    data = await get_dish(async_client, MENU_ID1, SUBMENU_ID11, DISH_ID_WRONG, waited_code=404)
+    assert data == {'detail': 'dish not found'}
 
 
 @pytest.mark.asyncio
-async def test_create_dishes_fix(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
+async def test_dish_wrong_menu(db_test_data: AsyncSession, async_client: AsyncClient):
+    # Блюдо существует для подменю, но передаем не тот ID меню
+    data = await get_dish(async_client, MENU_ID2, SUBMENU_ID11, DISH_ID111, waited_code=404)
+    assert data == {'detail': 'submenu not found'}
 
+
+@pytest.mark.asyncio
+async def test_dish_wrong_submenu(db_test_data: AsyncSession, async_client: AsyncClient):
+    # Подменю и меню переданы корректно, блюдо существует, но привязано к другому подменю
+    data = await get_dish(async_client, MENU_ID1, SUBMENU_ID12, DISH_ID111, waited_code=404)
+    assert data == {'detail': 'dish not found'}
+
+
+@pytest.mark.asyncio
+async def test_create_dishes_fix(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
     await create_dish(
-        client,
+        async_client,
         menu_id,
         submenu_id,
-        title='Dishes 1',
-        description='Dishes 1 description',
+        title='Dishes fixed',
+        description='Dishes fixed description',
         price='1.0',
     )
 
 
 @pytest.mark.asyncio
-async def test_create_dish_duplicate(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
-    title = random_word(7)
-    description = random_word(20)
-    price = '2.0'
-    await create_dish(
-        client,
-        menu_id,
-        submenu_id,
-        title,
-        description,
-        price,
-    )
-    response = await client.post(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
-        json={
-            'title': title,
-            'description': description,
-            'price': price,
-        },
-    )
-    assert response.status_code == 409
-
-
-@pytest.mark.asyncio
-async def test_create_dish_duplicate_another_submenu(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
-    title = random_word(8)
-    description = random_word(20)
-    price = '2.0'
-    await create_dish(
-        client,
-        menu_id,
-        submenu_id,
-        title,
-        description,
-        price,
-    )
-    response = await client.post(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
-        json={
-            'title': title,
-            'description': description,
-            'price': price,
-        },
-    )
-    assert response.status_code == 409
-
-
-@pytest.mark.asyncio
-async def test_create_dish_duplicate_another_menu(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
-    title = random_word(9)
-    description = random_word(20)
-    price = '2.0'
-    await create_dish(
-        client,
-        menu_id,
-        submenu_id,
-        title,
-        description,
-        price,
-    )
-
-    menu_id = '00000000-0002-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
-    response = await client.post(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
-        json={
-            'title': title,
-            'description': description,
-            'price': price,
-        },
-    )
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'submenu not found'}
-
-
-@pytest.mark.asyncio
-async def test_create_dish_submenu_not_exist(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-9999-0000-000000000000'
-    response = await client.post(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
-        json={
-            'title': 'Dishes ...',
-            'description': 'Dishes ... description',
-            'price': '1',
-        },
-    )
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'submenu not found'}
-
-
-@pytest.mark.asyncio
-async def test_create_dish_menu_not_exist(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-9999-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
-    response = await client.post(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
-        json={
-            'title': 'Dishes ...',
-            'description': 'Dishes ... description',
-            'price': '1',
-        },
-    )
-    assert response.status_code == 404
-    assert response.json() == {'detail': 'menu not found'}
-
-
-@pytest.mark.asyncio
-async def test_create_dish(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
+async def test_create_dish(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
     title = random_word(10)
     description = random_word(20)
     price = '1.0'
-    await create_dish(client, menu_id, submenu_id, title, description, price)
+    await create_dish(async_client, menu_id, submenu_id, title, description, price)
 
 
 @pytest.mark.asyncio
-async def test_create_dish_price_int(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
-    title = random_word(10)
-    description = random_word(20)
-    price = '123'
-    await create_dish(client, menu_id, submenu_id, title, description, price)
-
-
-@pytest.mark.asyncio
-async def test_create_dish_price_float(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
-    title = random_word(5)
-    description = random_word(20)
-    price = '10.22'
-    await create_dish(client, menu_id, submenu_id, title, description, price)
-
-
-@pytest.mark.asyncio
-async def test_create_dish_price_floor(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
-    title = random_word(6)
-    description = random_word(20)
-    price = '10.123'
-    await create_dish(client, menu_id, submenu_id, title, description, price)
-
-
-@pytest.mark.asyncio
-async def test_create_dish_price_ceil(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
+async def test_create_dish_duplicate(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
     title = random_word(7)
     description = random_word(20)
-    price = '10.126'
-    await create_dish(client, menu_id, submenu_id, title, description, price)
+    price = '2.0'
+    await create_dish(async_client, menu_id, submenu_id, title, description, price)
+    await create_dish(async_client, menu_id, submenu_id, title, description, price, waited_code=409)
 
 
 @pytest.mark.asyncio
-async def test_create_dish_and_check(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
+async def test_create_dish_duplicate_another_submenu(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+    title = random_word(8)
+    description = random_word(20)
+    price = '2.0'
+    await create_dish(async_client, menu_id, submenu_id, title, description, price)
+
+    submenu_id = SUBMENU_ID12
+    await create_dish(async_client, menu_id, submenu_id, title, description, price, waited_code=409)
+
+
+@pytest.mark.asyncio
+async def test_create_dish_duplicate_another_menu(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+    title = random_word(9)
+    description = random_word(20)
+    price = '2.0'
+    await create_dish(async_client, menu_id, submenu_id, title, description, price)
+
+    menu_id = MENU_ID2
+    submenu_id = SUBMENU_ID23
+    await create_dish(async_client, menu_id, submenu_id, title, description, price, waited_code=409)
+
+
+@pytest.mark.asyncio
+async def test_create_dish_duplicate_submenu_menu_wrong(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+    title = random_word(9)
+    description = random_word(20)
+    price = '2.0'
+
+    await create_dish(async_client, menu_id, submenu_id, title, description, price)
+
+    # Пытаемся создать дубль для подменю, привязанного к другому меню. Должны получить 404, не 409!
+    menu_id = MENU_ID2
+    submenu_id = SUBMENU_ID11
+    data = await create_dish(async_client, menu_id, submenu_id, title, description, price, waited_code=404)
+    assert data == {'detail': 'submenu not found'}
+
+    # аналогично для того же меню, что и создавалось, но подменю привязано к другому меню
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID23
+    data = await create_dish(async_client, menu_id, submenu_id, title, description, price, waited_code=404)
+    assert data == {'detail': 'submenu not found'}
+
+
+@pytest.mark.asyncio
+async def test_create_dish_duplicate_submenu_not_exist(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+    title = random_word(9)
+    description = random_word(20)
+    price = '2.0'
+
+    await create_dish(async_client, menu_id, submenu_id, title, description, price)
+
+    # Пытаемся создать дубль для несуществующего подменю. Должны получить 404, не 409!
+    menu_id = MENU_ID2
+    submenu_id = SUBMENU_ID_WRONG
+    data = await create_dish(async_client, menu_id, submenu_id, title, description, price, waited_code=404)
+    assert data == {'detail': 'submenu not found'}
+
+
+@pytest.mark.asyncio
+async def test_create_dish_duplicate_menu_not_exist(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+    title = random_word(9)
+    description = random_word(20)
+    price = '2.0'
+
+    await create_dish(async_client, menu_id, submenu_id, title, description, price)
+
+    # Пытаемся создать дубль с несуществующим меню, должны получить 404, не 409!
+    menu_id = MENU_ID_WRONG
+    submenu_id = SUBMENU_ID11
+    data = await create_dish(async_client, menu_id, submenu_id, title, description, price, waited_code=404)
+    assert data == {'detail': 'menu not found'}
+
+
+@pytest.mark.asyncio
+async def test_create_dish_submenu_not_exist(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID_WRONG
+    data = await create_dish(async_client, menu_id, submenu_id, random_word(10), random_word(20), '1',
+                             waited_code=404)
+    assert data == {'detail': 'submenu not found'}
+
+
+@pytest.mark.asyncio
+async def test_create_dish_menu_not_exist(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID_WRONG
+    submenu_id = SUBMENU_ID11
+    data = await create_dish(async_client, menu_id, submenu_id, random_word(10), random_word(20), '1',
+                             waited_code=404)
+    assert data == {'detail': 'menu not found'}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('price', ('123', '10.22', '10.123', '10.126'))
+async def test_create_dish_prices(db_test_data: AsyncSession, async_client: AsyncClient, price):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+    title = random_word(10)
+    description = random_word(20)
+    await create_dish(async_client, menu_id, submenu_id, title, description, price)
+
+
+@pytest.mark.asyncio
+async def test_create_dish_and_check(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+
     # create
     title = random_word(11)
     description = random_word(20)
     price = '1.11'
-    dish_id = await create_dish(client, menu_id, submenu_id, title, description, price)
+    dish_id = await create_dish(async_client, menu_id, submenu_id, title, description, price)
 
     answer = {
         'id': dish_id,
@@ -279,24 +248,26 @@ async def test_create_dish_and_check(db_create_submenus: AsyncSession, client: A
     }
 
     # get dish by id
-    await check_dish_eq_dish(client, menu_id, answer)
+    await check_dish_eq_dish(async_client, menu_id, answer)
 
     # get all dishes
-    await check_dish_in_dishes(client, menu_id, answer)
+    await check_dish_in_dishes(async_client, menu_id, answer)
 
 
 @pytest.mark.asyncio
-async def test_update_dish_and_check(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
+async def test_update_dish_and_check(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+
     # create
     price = round_price('1')
-    dish_id = await create_dish(client, menu_id, submenu_id, random_word(12), random_word(20), price)
+    dish_id = await create_dish(async_client, menu_id, submenu_id, random_word(12), random_word(20), price)
 
     # patch with new values
     title = random_word(13)
     description = random_word(20)
-    await patch_dish(client, menu_id, submenu_id, dish_id, title, description, price)
+    await patch_dish(async_client, menu_id, submenu_id, dish_id, title, description, price)
+
     answer = {
         'id': dish_id,
         'submenu_id': submenu_id,
@@ -304,51 +275,94 @@ async def test_update_dish_and_check(db_create_submenus: AsyncSession, client: A
         'description': description,
         'price': price,
     }
+
     # get dish by id
-    await check_dish_eq_dish(client, menu_id, answer)
+    await check_dish_eq_dish(async_client, menu_id, answer)
+
     # get all dish
-    await check_dish_in_dishes(client, menu_id, answer)
+    await check_dish_in_dishes(async_client, menu_id, answer)
 
 
 @pytest.mark.asyncio
-async def test_delete_dish_and_check(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
+async def test_update_dish_not_exists(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+    dish_id = DISH_ID_WRONG
+
+    title = random_word(13)
+    description = random_word(20)
+    price = round_price('1')
+
+    data = await patch_dish(async_client, menu_id, submenu_id, dish_id, title, description, price, waited_code=404)
+    assert data == {'detail': 'dish not found'}
+
+    # блюдо не должно появиться
+    await check_dish_not_exists(async_client, dish_id)
+
+
+@pytest.mark.asyncio
+async def test_delete_dish_and_check(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+
     # create
     title = random_word(13)
     description = random_word(20)
     price = '1'
-    dish_id = await create_dish(client, menu_id, submenu_id, title, description, price)
+    dish_id = await create_dish(async_client, menu_id, submenu_id, title, description, price)
 
     # delete
-    response = await client.delete(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
-    )
-    assert response.status_code == 200
+    await delete_dish(async_client, menu_id, submenu_id, dish_id)
+
+    # re delete
+    await delete_dish(async_client, menu_id, submenu_id, dish_id, waited_code=404)
 
     # get submenu by id
-    response = await client.get(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
-    )
-    assert response.status_code == 404
+    await get_dish(async_client, menu_id, submenu_id, dish_id, waited_code=404)
 
-    # get all submenus
-    await check_dish_not_in_dishes(client, menu_id, submenu_id, dish_id)
+    # get not in submenus for menu_id
+    await check_dish_not_in_dishes(async_client, menu_id, submenu_id, dish_id)
 
-    # check all menus!
-    menus = (await client.get('/api/v1/menus')).json()
-    for menu in menus:
-        submenus = (await client.get(f"/api/v1/menus/{menu['id']}/submenus")).json()
-        for submenu in submenus:
-            await check_dish_not_in_dishes(client, menu['id'], submenu['id'], dish_id)
+    # check in all menus!
+    await check_dish_not_exists(async_client, dish_id)
 
 
 @pytest.mark.asyncio
-async def test_delete_submenu_not_exist(db_create_submenus: AsyncSession, client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
-    dish_id = '00000000-0000-0000-0000-000000000000'
-    response = await client.delete(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
-    )
-    assert response.status_code == 404
+async def test_delete_dish_dish_not_exist(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+    dish_id = DISH_ID_WRONG
+    data = await delete_dish(async_client, menu_id, submenu_id, dish_id, waited_code=404)
+    assert data == {'detail': 'dish not found'}
+
+
+@pytest.mark.asyncio
+async def test_delete_dish_submenu_not_exist(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID_WRONG
+    dish_id = DISH_ID111
+    data = await delete_dish(async_client, menu_id, submenu_id, dish_id, waited_code=404)
+    assert data == {'detail': 'submenu not found'}
+
+
+@pytest.mark.asyncio
+async def test_delete_dish_menu_not_exist(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID_WRONG
+    submenu_id = SUBMENU_ID11
+    dish_id = DISH_ID111
+    data = await delete_dish(async_client, menu_id, submenu_id, dish_id, waited_code=404)
+    assert data == {'detail': 'menu not found'}
+
+
+@pytest.mark.asyncio
+async def test_delete_dish_wrong_submenu(db_test_data: AsyncSession, async_client: AsyncClient):
+    # Блюдо существует для подменю, но передаем не тот ID меню
+    data = await delete_dish(async_client, MENU_ID2, SUBMENU_ID11, DISH_ID111, waited_code=404)
+    assert data == {'detail': 'submenu not found'}
+
+
+@pytest.mark.asyncio
+async def test_delete_dish_wrong_dish(db_test_data: AsyncSession, async_client: AsyncClient):
+    # Подменю и меню переданы корректно, блюдо существует, но привязано к другому подменю
+    data = await delete_dish(async_client, MENU_ID1, SUBMENU_ID11, DISH_ID123, waited_code=404)
+    assert data == {'detail': 'dish not found'}

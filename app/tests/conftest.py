@@ -18,9 +18,17 @@ from app.tests.database import (
     engine_test_async,
     override_get_db,
 )
-
-# from app.src.cache.actions import cache_reset
-from .utils_cache import cache_reset
+from app.tests.test_data import (
+    DISH1,
+    DISH2,
+    DISH3,
+    MENU1,
+    MENU2,
+    SUBMENU1,
+    SUBMENU2,
+    SUBMENU3,
+)
+from app.tests.test_utils_cache import cache_reset
 
 
 @pytest_asyncio.fixture(scope='module')
@@ -38,7 +46,7 @@ def create_db():
 
 
 # drop all database every time when test complete
-@pytest_asyncio.fixture(scope='module')
+@pytest_asyncio.fixture(scope='function')
 async def async_db_engine(create_db):
     app.dependency_overrides[get_db] = override_get_db
     await drop_tables_async()
@@ -48,8 +56,7 @@ async def async_db_engine(create_db):
     yield engine_test_async
 
 
-# truncate all table to isolate tests
-@pytest_asyncio.fixture(scope='module')
+@pytest_asyncio.fixture(scope='function')
 async def async_db(async_db_engine):
     async with TestingSession() as session:
         yield session
@@ -71,97 +78,19 @@ def event_loop():
     loop.close()
 
 
-@pytest_asyncio.fixture  # (scope='module')
-async def client() -> AsyncClient:
-    async with LifespanManager(app):
-        async with AsyncClient(app=app, base_url='http://test') as client:
-            yield client
-
-
-@pytest_asyncio.fixture(scope='module')
-async def db_create_menus(async_db):
-    async_db.add(
-        Menus(
-            id='00000000-0001-0000-0000-000000000000',
-            title='Menu 1 title',
-            description='Menu 1 description',
-        )
-    )
-    async_db.add(
-        Menus(
-            id='00000000-0002-0000-0000-000000000000',
-            title='Menu 2 title',
-            description='Menu 2 description',
-        )
-    )
-    await async_db.commit()
-    yield async_db
-
-
-@pytest_asyncio.fixture(scope='module')
-async def db_create_submenus(db_create_menus):
-    db_create_menus.add(
-        SubMenus(
-            id='00000000-0000-0001-0000-000000000000',
-            menu_id='00000000-0001-0000-0000-000000000000',
-            title='SubMenu 1 title',
-            description='SubMenu 11 description',
-        )
-    )
-    db_create_menus.add(
-        SubMenus(
-            id='00000000-0000-0002-0000-000000000000',
-            menu_id='00000000-0001-0000-0000-000000000000',
-            title='SubMenu 2 title',
-            description='SubMenu 12 description',
-        )
-    )
-    db_create_menus.add(
-        SubMenus(
-            id='00000000-0000-0003-0000-000000000000',
-            menu_id='00000000-0002-0000-0000-000000000000',
-            title='SubMenu 3 title',
-            description='SubMenu 21 description',
-        )
-    )
-    await db_create_menus.commit()
-    yield db_create_menus
-
-
-@pytest_asyncio.fixture(scope='module')
-async def db_create_dishes(db_create_submenus):
-    db_create_submenus.add(
-        Dishes(
-            id='00000000-0000-0000-0001-000000000000',
-            submenu_id='00000000-0000-0001-0000-000000000000',
-            title='Dish 1 title',
-            description='Dish 1 description',
-            price=10.0,
-        )
-    )
-    db_create_submenus.add(
-        Dishes(
-            id='00000000-0000-0000-0002-000000000000',
-            submenu_id='00000000-0000-0001-0000-000000000000',
-            title='Dish 2 title',
-            description='Dish 2 description',
-            price=10.0,
-        )
-    )
-    db_create_submenus.add(
-        Dishes(
-            id='00000000-0000-0000-0003-000000000000',
-            submenu_id='00000000-0000-0002-0000-000000000000',
-            title='Dish 3 title',
-            description='Dish 3 description',
-            price=10.0,
-        )
-    )
-    await db_create_submenus.commit()
-    yield db_create_submenus
-
-
 @pytest_asyncio.fixture(scope='function')
-async def db_create_dishes_clear_cache(db_create_dishes):
+async def db_test_data(async_db):
+    async_db.add(Menus(**MENU1))
+    async_db.add(Menus(**MENU2))
+    await async_db.commit()
+    async_db.add(SubMenus(**SUBMENU1))
+    async_db.add(SubMenus(**SUBMENU2))
+    async_db.add(SubMenus(**SUBMENU3))
+    await async_db.commit()
+    async_db.add(Dishes(**DISH1))
+    async_db.add(Dishes(**DISH2))
+    async_db.add(Dishes(**DISH3))
+    await async_db.commit()
+
     await cache_reset()
-    yield db_create_dishes
+    yield async_db

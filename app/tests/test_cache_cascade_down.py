@@ -14,13 +14,13 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .utils_dish import dish_in_cache
-from .utils_menu import menu_in_cache
-from .utils_submenu import submenu_in_cache
+from app.tests.test_utils_dish import dish_in_cache
+from app.tests.test_utils_menu import menu_in_cache
+from app.tests.test_utils_submenu import submenu_in_cache
 
 
 @pytest.mark.asyncio
-async def test_cache_submenu_cascade_drop_after_drop(db_create_dishes: AsyncSession, async_client: AsyncClient):
+async def test_cache_submenu_cascade_drop_after_drop(db_test_data: AsyncSession, async_client: AsyncClient):
     # сброс кэша после каскадного удаления
     # кладем в кэш меню
     menu_id = '00000000-0001-0000-0000-000000000000'
