@@ -23,10 +23,14 @@ class SubMenuRepository(BaseRepository):
 
     async def check(
             self,
-            menu_id: UUID
+            menu_id: UUID,
+            submenu_id: UUID | None = None
     ):
         if not (await self._menu_repo.get_by_ids(menu_id)):
             raise HTTPException(status_code=404, detail='menu not found')
+
+        if submenu_id and not (await self._crud.get_by_ids(menu_id, submenu_id)):
+            raise HTTPException(status_code=404, detail='submenu not found')
 
     async def get_by_ids(
             self,
@@ -60,5 +64,6 @@ class SubMenuRepository(BaseRepository):
             menu_id: UUID,
             submenu_id: UUID
     ):
-        await self.check(menu_id)
+        await self.check(menu_id, submenu_id)
         await self._delete(submenu_id)
+        return

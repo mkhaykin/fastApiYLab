@@ -27,12 +27,16 @@ class DishesRepository(BaseRepository):
     async def check(
             self,
             menu_id: UUID,
-            submenu_id: UUID
+            submenu_id: UUID,
+            dish_id: UUID | None = None
     ) -> None:
         if not (await self._menu_repo.get_by_ids(menu_id)):
             raise HTTPException(404, 'menu not found')
         if not (await self._submenu_repo.get_by_ids(menu_id, submenu_id)):
             raise HTTPException(404, 'submenu not found')
+
+        if dish_id and not (await self._crud.get_by_ids(menu_id, submenu_id, dish_id)):
+            raise HTTPException(404, 'dish not found')
 
     async def get_by_ids(
             self,
@@ -71,6 +75,6 @@ class DishesRepository(BaseRepository):
             submenu_id: UUID,
             dish_id: UUID
     ) -> None:
-        await self.check(menu_id, submenu_id)
+        await self.check(menu_id, submenu_id, dish_id)
         await self._delete(dish_id)
         return
