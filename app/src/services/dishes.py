@@ -38,7 +38,6 @@ class DishesService(BaseService):
             submenu_id: UUID,
             dish: schemas.CreateDishIn
     ) -> schemas.CreateDishOut:
-        await self.repo.check(menu_id, submenu_id)
         result = await self.repo.create_dish(menu_id, submenu_id, dish)
         return result
 
@@ -49,7 +48,6 @@ class DishesService(BaseService):
             dish_id: UUID,
             submenu: schemas.UpdateDishIn
     ) -> schemas.UpdateDishOut:
-        await self.repo.check(menu_id, submenu_id)
         return await self.repo.update_dish(menu_id, submenu_id, dish_id, submenu)
 
     async def delete(
@@ -58,6 +56,5 @@ class DishesService(BaseService):
             submenu_id: UUID,
             dish_id: UUID
     ) -> schemas.MessageDishDeleted:
-        await self.repo.check(menu_id, submenu_id)
         await self.repo.delete_dish(menu_id, submenu_id, dish_id)
         return schemas.MessageDishDeleted()
