@@ -23,7 +23,7 @@ services:
 #      - ./data:/var/lib/postgresql/data
 
   redis:
-    image: redis:latest
+    image: redis:7.2-alpine
     container_name: redis
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
@@ -34,7 +34,7 @@ services:
 #      retries: 5
 
   rabbitmq:
-    image: rabbitmq:3.10.7-management
+    image: rabbitmq:3.10.7-alpine
     container_name: rabbitmq
     hostname: rabbit
     restart: always
@@ -56,20 +56,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+        - .env
     environment:
       POSTGRES_HOST: db
-      POSTGRES_PORT: "${POSTGRES_PORT}"
-      POSTGRES_DB: "${POSTGRES_DB}"
-      POSTGRES_USER: "${POSTGRES_USER}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       REDIS_SERVER: redis
-      REDIS_PORT: "${REDIS_PORT}"
       RABBITMQ_SERVER: rabbit
-      RABBITMQ_PORT: "${RABBITMQ_PORT}"
-      RABBITMQ_DEFAULT_USER: "${RABBITMQ_DEFAULT_USER}"
-      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_DEFAULT_PASS}"
-      RABBITMQ_DEFAULT_VHOST: "${RABBITMQ_DEFAULT_VHOST}"
-      PATH_TO_STORE: "/srv/media"
     command: celery --app=app.src.task:app_celery worker --loglevel=INFO
     depends_on:
       - app
@@ -84,12 +76,10 @@ services:
       build:
         context: .
         dockerfile: Dockerfile
+      env_file:
+        - .env
       environment:
         RABBITMQ_SERVER: rabbit
-        RABBITMQ_PORT: "${RABBITMQ_PORT}"
-        RABBITMQ_DEFAULT_USER: "${RABBITMQ_DEFAULT_USER}"
-        RABBITMQ_DEFAULT_PASS: "${RABBITMQ_DEFAULT_PASS}"
-        RABBITMQ_DEFAULT_VHOST: "${RABBITMQ_DEFAULT_VHOST}"
       command: celery --app=app.src.task:app_celery beat --loglevel=INFO
       links:
         - celery
@@ -104,19 +94,12 @@ services:
       dockerfile: Dockerfile
     container_name: fastapi
     restart: on-failure
+    env_file:
+      - .env
     environment:
       POSTGRES_HOST: db
-      POSTGRES_PORT: "${POSTGRES_PORT}"
-      POSTGRES_DB: "${POSTGRES_DB}"
-      POSTGRES_USER: "${POSTGRES_USER}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       REDIS_SERVER: redis
-      REDIS_PORT: "${REDIS_PORT}"
       RABBITMQ_SERVER: rabbitmq
-      RABBITMQ_PORT: "${RABBITMQ_PORT}"
-      RABBITMQ_DEFAULT_USER: "${RABBITMQ_DEFAULT_USER}"
-      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_DEFAULT_PASS}"
-      RABBITMQ_DEFAULT_VHOST: "${RABBITMQ_DEFAULT_VHOST}"
     ports:
       - "8000:8000"
     depends_on:
