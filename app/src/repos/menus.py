@@ -26,6 +26,9 @@ class MenuRepository(BaseRepository):
         result = [schemas.GetMenu(**item) for item in items]
         return result
 
+    async def get_orm_all(self):
+        return await self._crud.get_orm_all()
+
     async def create_menu(
             self,
             obj: schemas.CreateMenuIn,

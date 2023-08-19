@@ -15,6 +15,9 @@ class MenusService(BaseService):
         self.repo = repo
         self.service_submenu = service_submenu
 
+    async def get_orm_all(self) -> list:
+        return await self.repo.get_orm_all()
+
     async def get_all(self) -> list[schemas.GetMenu]:
         return await self.repo.get_by_ids()
 

@@ -71,6 +71,18 @@ async def get_menus_full(
     return await service.get_full()
 
 
+@router.get(
+    path='/api/v1/all',
+    summary='Get all menus with linked elements',
+    status_code=http.HTTPStatus.OK,
+    response_description='Return full orm query',
+)
+async def get_orm_all(
+        service: MenusService = Depends(),
+):
+    return await service.get_orm_all()
+
+
 @router.post(
     path='/api/v1/menus',
     summary='Create the menu',

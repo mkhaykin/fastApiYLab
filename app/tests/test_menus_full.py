@@ -2,6 +2,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.main import app
 from app.tests.test_utils_dish import get_dishes
 from app.tests.test_utils_menu import get_menus
 from app.tests.test_utils_submenu import get_submenus
@@ -57,7 +58,7 @@ async def _get_flat_data(async_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_menus_orm_all(db_test_data: AsyncSession, async_client: AsyncClient):
-    response = await async_client.get('/all')
+    response = await async_client.get(app.url_path_for('get_orm_all'))
     assert response.status_code == 200
     assert response.json()
 
