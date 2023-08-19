@@ -1,5 +1,4 @@
 import asyncio
-import os
 
 from app.src import crud
 from app.src.config import settings
@@ -16,7 +15,7 @@ async def async_xls_load():
         print("can't load data")    # TODO write to log
         return
 
-    filename: str = os.path.join(settings.PATH_TO_STORE, 'Menu.xlsx')
+    filename: str = settings.EXCHANGE_FILE
     crud_menu = crud.MenusCRUD(session)
     repo_menus = MenuRepository(crud_menu)
 
@@ -41,5 +40,6 @@ def xls_load():
 
 @app_celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    # Calls xls_load every 15 seconds.
-    sender.add_periodic_task(15.0, xls_load.s(), name='sync file admin/Menu.xlsx every 15 sec')
+    sender.add_periodic_task(settings.EXCHANGE_SCHEDULE,
+                             xls_load.s(),
+                             name=f'sync file {settings.EXCHANGE_FILE} every {settings.EXCHANGE_SCHEDULE} sec')

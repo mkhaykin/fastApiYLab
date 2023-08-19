@@ -19,6 +19,10 @@ class Settings(BaseSettings):
 
     PATH_TO_STORE: str = ''
 
+    EXCHANGE_SCHEDULE: int = 15
+    EXCHANGE_FILE: str = ''
+    EXCHANGE_URL: str = ''
+
     model_config = SettingsConfigDict(env_file='.env')
 
 
