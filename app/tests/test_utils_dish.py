@@ -1,7 +1,11 @@
 from httpx import AsyncClient
 
+from app.main import app
+from app.src.routes import dishes
 from app.tests.test_utils import compare_response, round_price
 from app.tests.test_utils_cache import key_pattern_in_cache
+from app.tests.test_utils_menu import get_menus
+from app.tests.test_utils_submenu import get_submenus
 
 
 def _check_field(data, submenu_id=None, dish_id=None):
@@ -22,8 +26,15 @@ async def get_dishes(
         submenu_id: str,
         waited_code: int = 200,
 ) -> list[dict]:
+    # response = await client.get(
+    #     f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes'
+    # )
     response = await client.get(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes'
+        app.url_path_for(
+            dishes.get_dishes.__name__,
+            menu_id=menu_id,
+            submenu_id=submenu_id,
+        ),
     )
     assert response.status_code == waited_code
 
@@ -41,8 +52,16 @@ async def get_dish(
         dish_id: str,
         waited_code: int = 200,
 ) -> dict:
+    # response = await client.get(
+    #     f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
+    # )
     response = await client.get(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
+        app.url_path_for(
+            dishes.get_dish.__name__,
+            menu_id=menu_id,
+            submenu_id=submenu_id,
+            dish_id=dish_id,
+        ),
     )
     assert response.status_code == waited_code
 
@@ -61,9 +80,21 @@ async def create_dish(
         price: str,
         waited_code: int = 201,
 ):
+    # response = await client.post(
+    #     f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
+    #     json={'title': title, 'description': description, 'price': round_price(price)},
+    # )
     response = await client.post(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
-        json={'title': title, 'description': description, 'price': round_price(price)},
+        app.url_path_for(
+            dishes.create_dish.__name__,
+            menu_id=menu_id,
+            submenu_id=submenu_id,
+        ),
+        json={
+            'title': title,
+            'description': description,
+            'price': round_price(price)
+        },
     )
 
     assert response.status_code == waited_code
@@ -93,8 +124,21 @@ async def patch_dish(
         price: str,
         waited_code: int = 200,
 ):
+    # response = await client.patch(
+    #     f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
+    #     json={
+    #         'title': title,
+    #         'description': description,
+    #         'price': price,
+    #     },
+    # )
     response = await client.patch(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}',
+        app.url_path_for(
+            dishes.patch_dish.__name__,
+            menu_id=menu_id,
+            submenu_id=submenu_id,
+            dish_id=dish_id,
+        ),
         json={
             'title': title,
             'description': description,
@@ -122,8 +166,16 @@ async def delete_dish(
         waited_code: int = 200,
 ):
     # delete
+    # response = await client.delete(
+    #     f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
+    # )
     response = await client.delete(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
+        app.url_path_for(
+            dishes.delete_dish.__name__,
+            menu_id=menu_id,
+            submenu_id=submenu_id,
+            dish_id=dish_id,
+        ),
     )
     assert response.status_code == waited_code
     return response.json()
@@ -200,9 +252,11 @@ async def check_dish_not_exists(
     :return:
     """
     # check all menus!
-    menus = (await client.get('/api/v1/menus')).json()
+    # menus = (await client.get('/api/v1/menus')).json()
+    menus = await get_menus(client)
     for menu in menus:
-        submenus = (await client.get(f"/api/v1/menus/{menu['id']}/submenus")).json()
+        # submenus = (await client.get(f"/api/v1/menus/{menu['id']}/submenus")).json()
+        submenus = await get_submenus(client, menu['id'])
         for submenu in submenus:
             await check_dish_not_in_dishes(client, menu['id'], submenu['id'], dish_id)
 
