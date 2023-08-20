@@ -14,6 +14,7 @@ class Config:
         settings.RABBITMQ_PORT,
         settings.RABBITMQ_DEFAULT_VHOST,
     )
+    broker_connection_retry_on_startup = False
     result_backend = 'rpc://'
     worker_send_task_event = False
     task_ignore_result = True

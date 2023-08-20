@@ -1,28 +1,13 @@
 import http
-import os
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends
 
 from app.src import schemas
-from app.src.config import settings
-from app.src.services import MenusService, XlsMenuService
-
-from .utils import cache, invalidate_cache
+from app.src.routes.utils import cache, invalidate_cache
+from app.src.services import MenusService
 
 router = APIRouter()
-
-
-@router.get(
-    path='/api/v1/menus/load',
-    summary='Sync data with /admin/Menu.xlsx',
-    status_code=http.HTTPStatus.OK,
-    response_model=schemas.MessageMenuLoad,
-)
-async def read_main(service: XlsMenuService = Depends()):
-    filename: str = os.path.join(settings.PATH_TO_STORE, 'Menu.xlsx')
-    await service.load_from_file(filename)
-    return {'msg': 'data loads slow'}
 
 
 @router.get(

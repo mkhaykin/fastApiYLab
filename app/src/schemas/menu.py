@@ -54,6 +54,7 @@ class MessageMenuNotFound(BaseSchema):
 
 class MessageMenuLoad(BaseSchema):
     detail: str = 'data loads manually'
+    error_count: int | None = 0
 
 
 class MessageMenuDuplicated(BaseSchema):

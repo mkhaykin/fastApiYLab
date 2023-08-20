@@ -5,6 +5,7 @@ from app.src.database import create_tables
 from app.src.routes.dishes import router as dishes_router
 from app.src.routes.menus import router as menu_router
 from app.src.routes.submenus import router as submenu_router
+from app.src.routes.xls import router as xls_router
 
 create_tables()
 
@@ -13,6 +14,7 @@ app = FastAPI()
 app.include_router(menu_router)
 app.include_router(submenu_router)
 app.include_router(dishes_router)
+app.include_router(xls_router)
 
 
 @app.get('/')

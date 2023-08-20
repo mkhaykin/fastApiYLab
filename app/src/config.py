@@ -1,4 +1,12 @@
+from enum import Enum
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class TypeEnum(str, Enum):
+    no_set = ''
+    file = 'FILE'
+    sheet = 'SHEET'
 
 
 class Settings(BaseSettings):
@@ -20,8 +28,10 @@ class Settings(BaseSettings):
     PATH_TO_STORE: str = ''
 
     EXCHANGE_SCHEDULE: int = 15
+    EXCHANGE_TYPE: TypeEnum = TypeEnum.no_set
     EXCHANGE_FILE: str = ''
-    EXCHANGE_URL: str = ''
+    EXCHANGE_SHEET_ID: str = ''
+    EXCHANGE_SHEET_TOKEN: str = ''
 
     model_config = SettingsConfigDict(env_file='.env')
 
