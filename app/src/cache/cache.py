@@ -26,7 +26,7 @@ class Cache:
 
     async def set(self, key: UUID | str, data: list[schemas.TBaseSchema] | schemas.TBaseSchema | None) -> None:
         byte_data = pickle.dumps(data)
-        await self.client.set(str(key), byte_data, ex=30)
+        await self.client.set(str(key), byte_data, ex=settings.CACHE_LIFETIME)
         return
 
     async def get(self, key: UUID | str) -> list[schemas.TBaseSchema] | None:
