@@ -260,7 +260,7 @@ async def test_update_dish_and_check(db_test_data: AsyncSession, async_client: A
     submenu_id = SUBMENU_ID11
 
     # create
-    price = round_price('1')
+    price = round_price('1.11')
     dish_id = await create_dish(async_client, menu_id, submenu_id, random_word(12), random_word(20), price)
 
     # patch with new values

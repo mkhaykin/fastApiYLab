@@ -2,59 +2,51 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.tests.test_data import DISH_ID111, MENU_ID1, SUBMENU_ID11
 from app.tests.test_utils import random_word
-from app.tests.test_utils_menu import menu_in_cache
-from app.tests.test_utils_submenu import submenu_in_cache
+from app.tests.test_utils_dish import create_dish, delete_dish, dish_in_cache, get_dish
+from app.tests.test_utils_menu import get_menu, menu_in_cache
+from app.tests.test_utils_submenu import get_submenu, submenu_in_cache
 
 
 @pytest.mark.asyncio
-async def test_dishes_count(db_test_data: AsyncSession, async_client: AsyncClient):
-    menu_id = '00000000-0001-0000-0000-000000000000'
-    submenu_id = '00000000-0000-0001-0000-000000000000'
-    response = await async_client.get(f'/api/v1/menus/{menu_id}')
-    assert response.status_code == 200
-
+async def test_cache_dishes_create(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+    dish_id = DISH_ID111
     # Кладем в кэш меню
-    response = await async_client.get(f'/api/v1/menus/{menu_id}')
-    assert response.status_code == 200
+    await get_menu(async_client, menu_id)
     # кладем в кэш подменю
-    response = await async_client.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}')
-    assert response.status_code == 200
+    await get_submenu(async_client, menu_id, submenu_id)
+    # кладем в кэш блюдо
+    await get_dish(async_client, menu_id, submenu_id, dish_id)
 
     # Создаем блюдо
-    response = await async_client.post(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes',
-        json={
-            'title': f'{random_word(10)}',
-            'description': f'{random_word(20)}',
-            'price': '1',
-        },
-    )
-    assert response.status_code == 201
-    dish_id = response.json()['id']
+    created_dish_id = await create_dish(async_client, menu_id, submenu_id, random_word(10), random_word(20), '1.11')
 
-    # Кэша нет, т.к. создание блюда должно сбросить кеш и меню и подменю
+    # Кэша нет у меню, подменю, нового блюда и "старого" блюда
     assert not (await menu_in_cache(menu_id))
     assert not (await submenu_in_cache(menu_id, submenu_id))
+    assert not (await dish_in_cache(menu_id, submenu_id, dish_id))
+    assert not (await dish_in_cache(menu_id, submenu_id, created_dish_id))
 
-    # Кладем в кеш меню
-    response = await async_client.get(f'/api/v1/menus/{menu_id}')
-    assert response.status_code == 200
-    # Проверяем что есть
-    assert (await menu_in_cache(menu_id))
 
-    # Удаляем блюдо
-    response = await async_client.delete(
-        f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}'
-    )
-    assert response.status_code == 200
+@pytest.mark.asyncio
+async def test_cache_dishes_delete(db_test_data: AsyncSession, async_client: AsyncClient):
+    menu_id = MENU_ID1
+    submenu_id = SUBMENU_ID11
+    dish_id = DISH_ID111
+    # Кладем в кэш меню
+    await get_menu(async_client, menu_id)
+    # кладем в кэш подменю
+    await get_submenu(async_client, menu_id, submenu_id)
+    # кладем в кэш блюдо
+    await get_dish(async_client, menu_id, submenu_id, dish_id)
 
-    # Меню не в кэше
+    # удаляем блюдо
+    await delete_dish(async_client, menu_id, submenu_id, dish_id)
+
+    # Кэша нет у меню, подменю и нового блюда. Есть у "старого" блюда
     assert not (await menu_in_cache(menu_id))
-    # Подменю не в кэше
     assert not (await submenu_in_cache(menu_id, submenu_id))
-
-    response = await async_client.get(f'/api/v1/menus/{menu_id}')
-    assert response.status_code == 200
-
-    assert (await menu_in_cache(menu_id))
+    assert not (await dish_in_cache(menu_id, submenu_id, dish_id))
