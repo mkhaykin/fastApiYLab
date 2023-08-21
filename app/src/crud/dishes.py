@@ -21,11 +21,14 @@ class DishesCRUD(BaseCRUD):
 
     async def get_by_ids(self, menu_id: UUID, submenu_id: UUID, dish_id: UUID | None = None) -> Sequence[RowMapping]:
         query = (
-            select(models.Dishes.id,
-                   models.Dishes.submenu_id,
-                   models.Dishes.title,
-                   models.Dishes.description,
-                   models.Dishes.price, )
+            select(
+                models.Dishes.id,
+                models.Dishes.submenu_id,
+                models.Dishes.title,
+                models.Dishes.description,
+                models.Dishes.price,
+                models.Dishes.discount,
+            )
             .outerjoin(models.SubMenus, models.SubMenus.id == models.Dishes.submenu_id)
             .outerjoin(models.Menus, models.Menus.id == models.SubMenus.menu_id)
             .where(models.SubMenus.id == submenu_id, models.Menus.id == menu_id))

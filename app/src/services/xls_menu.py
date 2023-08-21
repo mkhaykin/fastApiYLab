@@ -72,8 +72,7 @@ class XlsMenuService(BaseService):
             try:
                 return await func(self, *args, **kwargs)
             except Exception as e:
-                if self.error_counter:
-                    self.error_counter.inc()
+                self.error_counter.inc()
                 # TODO write log
                 print(f'error: {str(e)}')
 
@@ -197,7 +196,6 @@ class XlsMenuService(BaseService):
 
     @silent
     async def _patch_dish(self, menu_id, submenu_id, dish_id, dish, dish_desc, dish_price, dish_discount):
-        # TODO dish_discount
         if await self.repo_dishes.get_by_ids(menu_id, submenu_id, dish_id):
             await self.repo_dishes.update_dish(
                 menu_id,
@@ -207,6 +205,7 @@ class XlsMenuService(BaseService):
                     title=dish,
                     description=dish_desc,
                     price=dish_price,
+                    discount=dish_discount,
                 ),
             )
         else:
@@ -217,6 +216,7 @@ class XlsMenuService(BaseService):
                     title=dish,
                     description=dish_desc,
                     price=dish_price,
+                    discount=dish_discount,
                 ),
                 obj_id=dish_id,
             )

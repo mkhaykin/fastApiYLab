@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import Depends
@@ -15,12 +16,18 @@ class DishesService(BaseService):
     ):
         self.repo = repo
 
+    async def get_by_ids(self, menu_id, submenu_id, dish_id=None):
+        result = await self.repo.get_by_ids(menu_id, submenu_id, dish_id)
+        for item in result:
+            item.price = Decimal(int(item.price * (100 - item.discount)) / Decimal(100))
+        return result
+
     async def get_all(
             self,
             menu_id: UUID,
             submenu_id: UUID
     ) -> list[schemas.GetDish]:
-        return await self.repo.get_by_ids(menu_id, submenu_id)
+        return await self.get_by_ids(menu_id, submenu_id)
 
     async def get(
             self,
@@ -29,7 +36,7 @@ class DishesService(BaseService):
             dish_id: UUID
     ) -> schemas.GetDish | None:
         await self.repo.check(menu_id, submenu_id)
-        result = await self.repo.get_by_ids(menu_id, submenu_id, dish_id)
+        result = await self.get_by_ids(menu_id, submenu_id, dish_id)
         return self.get_one(result, 'dish not found')
 
     async def create(

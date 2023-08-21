@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Numeric, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer, Numeric, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 
 from .base import BaseModel
@@ -15,4 +15,8 @@ class Dishes(BaseModel):
         Numeric(precision=10, scale=2, asdecimal=True, decimal_return_scale=None)
     )
 
+    discount = Column(
+        Integer(),
+        nullable=True,
+    )
     __table_args__ = (UniqueConstraint('submenu_id', 'title', name='uc_dishes'),)
